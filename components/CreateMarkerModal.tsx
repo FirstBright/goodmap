@@ -1,91 +1,100 @@
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
-import { Input } from "./ui/input"
-import { Button } from "./ui/button"
+'use client'
+import { useState,useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface CreateMarkerModalProps {
-    isOpen: boolean
-    onClose: () => void
-    position: { lat: number; lng: number }
-    onMarkerCreated: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  position: { lat: number; lng: number };
+  onMarkerCreated: () => void;
 }
 
 export default function CreateMarkerModal({
-    isOpen,
-    onClose,
-    position,
-    onMarkerCreated,
+  isOpen,
+  onClose,
+  position,
+  onMarkerCreated,
 }: CreateMarkerModalProps) {
-    const [name, setName] = useState("")
-    const [isLoading, setIsLoading] = useState(false)
+  const [name, setName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
+  useEffect(() => {
+    console.log("CreateMarkerModal isOpen:", isOpen);
+  }, [isOpen]);
 
-        try {
-            const response = await fetch("/api/markers", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name,
-                    latitude: position.lat,
-                    longitude: position.lng,
-                }),
-            })
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form submitted with name:", name);
+    setIsLoading(true);
 
-            if (!response.ok) {
-                const data = await response.json()
-                alert(data.message)
-                return
-            }
-
-            setName("")
-            onMarkerCreated()
-            onClose()
-        } catch (error) {
-            console.error("Error creating marker:", error)
-            alert("마커 생성 중 오류가 발생했습니다.")
-        } finally {
-            setIsLoading(false)
+    try {
+        const payload = {
+          name,
+          latitude: position.lat,
+          longitude: position.lng,
+        };
+        console.log("Sending POST to /api/markers:", payload);
+        const response = await fetch("/api/markers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        console.log("POST /api/markers status:", response.status);
+  
+        if (!response.ok) {
+          const data = await response.json();
+          console.error("POST error response:", data);
+          throw new Error(data.message || `HTTP error! status: ${response.status}`);
         }
-    }
+  
+        const data = await response.json();
+        console.log("Created marker:", data);
+        setName("");
+        onMarkerCreated();
+        onClose();
+      } catch (error) {
+        console.error("Error creating marker:", error);
+        alert(error instanceof Error ? error.message : "마커 생성 중 오류가 발생했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>새 마커 생성</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className='space-y-4'>
-                    <div>
-                        <label className='block text-sm font-medium mb-1'>
-                            마커 이름
-                        </label>
-                        <Input
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder='마커 이름을 입력하세요'
-                            required
-                        />
-                    </div>
-                    <div className='flex justify-end space-x-2'>
-                        <Button
-                            type='button'
-                            variant='outline'
-                            onClick={onClose}
-                            disabled={isLoading}
-                        >
-                            취소
-                        </Button>
-                        <Button type='submit' disabled={isLoading}>
-                            {isLoading ? "생성 중..." : "생성"}
-                        </Button>
-                    </div>
-                </form>
-            </DialogContent>
+          <DialogContent className="z-[1000]" aria-describedby="dialog-description">
+            <DialogHeader>
+              <DialogTitle>새 마커 생성</DialogTitle>
+              <DialogDescription id="dialog-description">
+                지도에 새 마커를 추가하려면 이름을 입력하세요.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="marker-name" className="block text-sm font-medium mb-1">
+                  마커 이름
+                </label>
+                <Input
+                  id="marker-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="마커 이름을 입력하세요"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+                  취소
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "생성 중..." : "생성"}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
         </Dialog>
-    )
-}
+      );
+    }

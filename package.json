@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -13,6 +13,7 @@
     "@radix-ui/react-dialog": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.0",
     "@types/bcryptjs": "^3.0.0",
+    "@types/react-leaflet": "^3.0.0",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
