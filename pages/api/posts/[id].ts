@@ -17,7 +17,7 @@ export default async function handler(
 
         
         if (password !== post.password)
-            return res.status(401).json({ message: "Incorrect password" })
+            return res.status(401).json({ message: "비밀번호가 맞지 않습니다. 다시 시도해 주세요." })
 
         await prisma.post.delete({ where: { id } })
         return res.status(200).json({ message: "Post deleted" })
@@ -27,7 +27,7 @@ export default async function handler(
         if (!post) return res.status(404).json({ message: "Post not found" })
 
         if (password !== post.password)
-            return res.status(401).json({ message: "Incorrect password" })
+            return res.status(401).json({ message: "비밀번호가 맞지 않습니다. 다시 시도해 주세요." })
     
         const updatedPost = await prisma.post.update({
             where: { id },
