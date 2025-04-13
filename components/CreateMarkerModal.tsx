@@ -66,21 +66,21 @@ export default function CreateMarkerModal({
         <Dialog open={isOpen} onOpenChange={onClose}>
           <DialogContent className="z-[1000]" aria-describedby="dialog-description">
             <DialogHeader>
-              <DialogTitle>새 마커 생성</DialogTitle>
+              <DialogTitle>새로운 장소 생성</DialogTitle>
               <DialogDescription id="dialog-description">
-                지도에 새 마커를 추가하려면 이름을 입력하세요.
+                {`위도: ${position.lat.toFixed(2)}, 경도: ${position.lng.toFixed(2)}`}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="marker-name" className="block text-sm font-medium mb-1">
-                  마커 이름
+                  장소 이름
                 </label>
                 <Input
                   id="marker-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="마커 이름을 입력하세요"
+                  placeholder="장소 이름을 입력하세요"
                   required
                   disabled={isLoading}
                 />
