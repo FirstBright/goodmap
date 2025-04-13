@@ -124,6 +124,13 @@ body {
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+.dialog-content {
+  z-index: 1000 !important;
+}
+
+.leaflet-container {
+  z-index: 0;
+}
 
 @layer base {
   * {
