@@ -149,9 +149,9 @@ export default function PostModal({ isOpen, onClose, markerId, markerName }: Pos
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="z-[1000]" aria-describedby="dialog-description">
                 <DialogHeader>
-                    <DialogTitle>{markerName}의 포스트</DialogTitle>
+                    <DialogTitle>{markerName}</DialogTitle>
                 </DialogHeader>
 
                 {/* 포스트 목록 */}
