@@ -64,7 +64,7 @@ export default function CreateMarkerModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-          <DialogContent className="z-[1000]" aria-describedby="dialog-description">
+          <DialogContent className="z-[1000] max-w-full sm:max-w-lg" aria-describedby="dialog-description">
             <DialogHeader>
               <DialogTitle>새로운 장소 생성</DialogTitle>
               <DialogDescription id="dialog-description">
@@ -83,6 +83,7 @@ export default function CreateMarkerModal({
                   placeholder="장소 이름을 입력하세요"
                   required
                   disabled={isLoading}
+                  className="w-full"
                 />
               </div>
               <div className="flex justify-end space-x-2">

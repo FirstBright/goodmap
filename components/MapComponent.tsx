@@ -141,9 +141,9 @@ export default function MapComponent() {
   }
 
   return (
-    <div className="relative h-screen w-full flex flex-col">
+    <div className="relative h-screen w-1080p flex flex-col">
       {/* 검색창 */}
-      <div className="p-4 flex items-center gap-2 z-[1000] bg-white shadow-md">
+      <div className="p-4 flex items-center gap-2 z-[1000] bg-white shadow-md sm:p-6">
         <Input
           type="text"
           placeholder="장소 이름으로 검색..."
@@ -152,7 +152,7 @@ export default function MapComponent() {
           className="w-full max-w-md"
         />
         {searchQuery && (
-          <Button variant="outline" onClick={clearSearch}>
+          <Button variant="outline" onClick={clearSearch} className="hidden sm:block">
             초기화
           </Button>
         )}

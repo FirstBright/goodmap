@@ -149,7 +149,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName }: Pos
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="z-[1000]" aria-describedby="dialog-description">
+            <DialogContent className="z-[1000] max-w-full sm:max-w-2xl" aria-describedby="dialog-description">
                 <DialogHeader>
                     <DialogTitle>{markerName}</DialogTitle>
                 </DialogHeader>
