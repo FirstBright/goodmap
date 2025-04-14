@@ -24,6 +24,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
     const [posts, setPosts] = useState<Post[]>([]);
     const [newPost, setNewPost] = useState({ title: "", content: "", password: "" });
     const [editPost, setEditPost] = useState<{ id: string; title: string; content: string; password: string } | null>(null);
+    const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -82,6 +83,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
             }
 
             setNewPost({ title: "", content: "", password: "" });
+            setIsCreateFormOpen(false);
             fetchPosts();
         } catch (error) {
             console.error("Error creating post:", error);
@@ -182,6 +184,13 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
 
                 {/* 포스트 목록 */}
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {!isCreateFormOpen && !editPost && (
+                        <div className="flex justify-end">
+                            <Button onClick={() => setIsCreateFormOpen(true)} disabled={isLoading}>
+                                포스트 작성
+                            </Button>
+                        </div>
+                    )}
                     {isLoading && !posts.length ? (
                         <div className="text-center text-gray-500">로딩중...</div>
                     ) : posts.length > 0 ? (
@@ -225,7 +234,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                                 ) : (
                                     <>
                                         <h3 className="font-bold">{post.title}</h3>
-                                        <p>{post.content}</p>
+                                        <p className="break-words">{post.content}</p>
                                         <p className="text-sm text-gray-500">
                                             {new Date(post.createdAt).toLocaleString()}
                                         </p>
@@ -235,6 +244,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                                                 onClick={() =>
                                                     handleLikePost(post.id)
                                                 }
+                                                disabled={isLoading}
                                             >
                                                 좋아요
                                             </Button>
@@ -248,6 +258,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                                                         password: "",
                                                     })
                                                 }
+                                                disabled={isLoading}
                                             >
                                                 수정
                                             </Button>
@@ -257,6 +268,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                                                     const password = prompt("비밀번호를 입력하세요");
                                                     if (password) handleDeletePost(post.id, password);
                                                 }}
+                                                disabled={isLoading}
                                             >
                                                 삭제
                                             </Button>
@@ -271,32 +283,46 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                 </div>
 
                 {/* 새 포스트 작성 */}
-                <form onSubmit={handleCreatePost} className="space-y-4 mt-4">
-                    <Input
-                        value={newPost.title}
-                        onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                        placeholder="제목"
-                        required
-                    />
-                    <Textarea
-                        value={newPost.content}
-                        onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                        placeholder="내용"
-                        required
-                    />
-                    <Input
-                        type="password"
-                        value={newPost.password}
-                        onChange={(e) => setNewPost({ ...newPost, password: e.target.value })}
-                        placeholder="비밀번호"
-                        required
-                    />
-                    <div className="flex justify-end">
-                        <Button type="submit" disabled={isLoading}>
-                            {isLoading ? "작성 중..." : "포스트 작성"}
-                        </Button>
-                    </div>
-                </form>
+                {isCreateFormOpen && (
+                    <form onSubmit={handleCreatePost} className="space-y-4 mt-4">
+                        <Input
+                            value={newPost.title}
+                            onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                            placeholder="제목"
+                            required
+                            disabled={isLoading}
+                        />
+                        <Textarea
+                            value={newPost.content}
+                            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                            placeholder="내용"
+                            required
+                            disabled={isLoading}
+                            className="min-h-[100px]"
+                        />
+                        <Input
+                            type="password"
+                            value={newPost.password}
+                            onChange={(e) => setNewPost({ ...newPost, password: e.target.value })}
+                            placeholder="비밀번호"
+                            required
+                            disabled={isLoading}
+                        />
+                        <div className="flex justify-end space-x-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsCreateFormOpen(false)}
+                                disabled={isLoading}
+                            >
+                                취소
+                            </Button>
+                            <Button type="submit" disabled={isLoading}>
+                                작성
+                            </Button>
+                        </div>
+                    </form>
+                )}
             </DialogContent>
         </Dialog>
     );
