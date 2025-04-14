@@ -9,12 +9,12 @@ import PostModal from "./PostModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
+L.Icon.Default.prototype.options.iconUrl = "";
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
 interface MarkerData {
   id: string;
@@ -114,6 +114,7 @@ export default function MapComponent() {
         try {
           localStorage.setItem("mapState", JSON.stringify(newState));
           console.log("Saved map state to localStorage:", newState);
+          setMapState(newState);
         } catch (err) {
           console.error("Error saving to localStorage:", err);
         }

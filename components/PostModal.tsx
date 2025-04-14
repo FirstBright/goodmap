@@ -1,10 +1,9 @@
 'use client'
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Post {
     id: string;
@@ -18,34 +17,57 @@ interface PostModalProps {
     onClose: () => void;
     markerId: string;
     markerName: string;
+    editId?: string;
 }
 
-export default function PostModal({ isOpen, onClose, markerId, markerName }: PostModalProps) {
+export default function PostModal({ isOpen, onClose, markerId, markerName, editId }: PostModalProps) {
     const [posts, setPosts] = useState<Post[]>([]);
     const [newPost, setNewPost] = useState({ title: "", content: "", password: "" });
     const [editPost, setEditPost] = useState<{ id: string; title: string; content: string; password: string } | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [fetchError, setFetchError] = useState<string | null>(null);
 
+
+
+    const fetchPosts = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            setFetchError(null);
+            console.log(`Fetching posts for markerId: ${markerId}`);
+            const response = await fetch(`/api/markers/${markerId}/posts`, { method: "GET" });
+            console.log(`GET /api/markers/${markerId}/posts status: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch posts: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log("Fetched posts:", data);
+            setPosts(data);
+
+            // Prefill edit form if editId is provided
+            if (editId) {
+                const post = data.find((p: Post) => p.id === editId);
+                if (post) {
+                    console.log("Prefilling edit form for editId:", editId);
+                    setEditPost({ id: post.id, title: post.title, content: post.content, password: "" });
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching posts:", error);
+            setFetchError("포스트를 불러오는 데 실패했습니다.");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [markerId, editId]);
     useEffect(() => {
         if (isOpen && markerId) {
             fetchPosts();
         }
-    }, [isOpen, markerId]);
-
-    const fetchPosts = async () => {
-        try {
-            const response = await fetch(`/api/markers/${markerId}/posts`, { method: "GET" })
-            const data = await response.json();
-            setPosts(data);
-        } catch (error) {
-            console.error("Error fetching posts:", error);
-            alert("포스트를 불러오는 데 실패했습니다.");
-        }
-    };
+    }, [isOpen, markerId, fetchPosts]);
 
     const handleCreatePost = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setFetchError(null);
 
         try {
             const response = await fetch(`/api/markers/${markerId}/posts`, {
@@ -56,15 +78,14 @@ export default function PostModal({ isOpen, onClose, markerId, markerName }: Pos
 
             if (!response.ok) {
                 const data = await response.json();
-                alert(data.message);
-                return;
+                throw new Error(data.message || "포스트 생성 실패")
             }
 
             setNewPost({ title: "", content: "", password: "" });
             fetchPosts();
         } catch (error) {
             console.error("Error creating post:", error);
-            alert("포스트 생성 중 오류가 발생했습니다.");
+            setFetchError(error instanceof Error ? error.message : "포스트 생성 중 오류가 발생했습니다.");
         } finally {
             setIsLoading(false);
         }
@@ -75,6 +96,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName }: Pos
         if (!editPost) return;
 
         setIsLoading(true);
+        setFetchError(null);
         try {
             const response = await fetch(`/api/posts/${editPost.id}`, {
                 method: "PATCH",
@@ -88,8 +110,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName }: Pos
 
             if (!response.ok) {
                 const data = await response.json();
-                alert(data.message);
-                return;
+                throw new Error(data.message || "포스트 수정 실패");
             }
 
             setEditPost(null);
@@ -104,6 +125,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName }: Pos
 
     const handleDeletePost = async (postId: string, password: string) => {
         setIsLoading(true);
+        setFetchError(null);
         try {
             const response = await fetch(`/api/posts/${postId}`, {
                 method: "DELETE",
@@ -113,14 +135,13 @@ export default function PostModal({ isOpen, onClose, markerId, markerName }: Pos
 
             if (!response.ok) {
                 const data = await response.json();
-                alert(data.message);
-                return;
+                throw new Error(data.message || "포스트 삭제 실패");
             }
 
             fetchPosts();
         } catch (error) {
             console.error("Error deleting post:", error);
-            alert("포스트 삭제 중 오류가 발생했습니다.");
+            setFetchError(error instanceof Error ? error.message : "포스트 삭제 중 오류가 발생했습니다.");
         } finally {
             setIsLoading(false);
         }
@@ -128,6 +149,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName }: Pos
 
     const handleLikePost = async (postId: string) => {
         setIsLoading(true);
+        setFetchError(null);
         try {
             const response = await fetch(`/api/posts/${postId}/likes`, {
                 method: "POST",
@@ -135,14 +157,13 @@ export default function PostModal({ isOpen, onClose, markerId, markerName }: Pos
 
             if (!response.ok) {
                 const data = await response.json();
-                alert(data.message);
-                return;
+                throw new Error(data.message || "좋아요 실패");
             }
 
             fetchPosts();
         } catch (error) {
             console.error("Error liking post:", error);
-            alert("포스트 좋아요 중 오류가 발생했습니다.");
+            setFetchError(error instanceof Error ? error.message : "포스트 좋아요 중 오류가 발생했습니다.");
         } finally {
             setIsLoading(false);
         }
@@ -155,88 +176,98 @@ export default function PostModal({ isOpen, onClose, markerId, markerName }: Pos
                     <DialogTitle>{markerName}</DialogTitle>
                 </DialogHeader>
 
+                {fetchError && (
+                    <div className="text-red-500 mb-4">{fetchError}</div>
+                )}
+
                 {/* 포스트 목록 */}
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    {posts.map((post) => (
-                        <div key={post.id} className="border p-4 rounded-lg">
-                            {editPost?.id === post.id ? (
-                                <form onSubmit={handleEditPost} className="space-y-2">
-                                    <Input
-                                        value={editPost.title}
-                                        onChange={(e) => setEditPost({ ...editPost, title: e.target.value })}
-                                        placeholder="제목"
-                                        required
-                                    />
-                                    <Textarea
-                                        value={editPost.content}
-                                        onChange={(e) => setEditPost({ ...editPost, content: e.target.value })}
-                                        placeholder="내용"
-                                        required
-                                    />
-                                    <Input
-                                        type="password"
-                                        value={editPost.password}
-                                        onChange={(e) => setEditPost({ ...editPost, password: e.target.value })}
-                                        placeholder="비밀번호"
-                                        required
-                                    />
-                                    <div className="flex justify-end space-x-2">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => setEditPost(null)}
-                                            disabled={isLoading}
-                                        >
-                                            취소
-                                        </Button>
-                                        <Button type="submit" disabled={isLoading}>
-                                            저장
-                                        </Button>
-                                    </div>
-                                </form>
-                            ) : (
-                                <>
-                                    <h3 className="font-bold">{post.title}</h3>
-                                    <p>{post.content}</p>
-                                    <p className="text-sm text-gray-500">
-                                        {new Date(post.createdAt).toLocaleString()}
-                                    </p>
-                                    <div className="flex justify-end space-x-2 mt-2">
-                                        <Button
-                                            variant="outline"
-                                            onClick={() =>
-                                                handleLikePost(post.id)
-                                            }
-                                        >
-                                            좋아요
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            onClick={() =>
-                                                setEditPost({
-                                                    id: post.id,
-                                                    title: post.title,
-                                                    content: post.content,
-                                                    password: "",
-                                                })
-                                            }
-                                        >
-                                            수정
-                                        </Button>
-                                        <Button
-                                            variant="destructive"
-                                            onClick={() => {
-                                                const password = prompt("비밀번호를 입력하세요");
-                                                if (password) handleDeletePost(post.id, password);
-                                            }}
-                                        >
-                                            삭제
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    ))}
+                    {isLoading && !posts.length ? (
+                        <div className="text-center text-gray-500">로딩중...</div>
+                    ) : posts.length > 0 ? (
+                        posts.map((post) => (
+                            <div key={post.id} className="border p-4 rounded-lg">
+                                {editPost?.id === post.id ? (
+                                    <form onSubmit={handleEditPost} className="space-y-2">
+                                        <Input
+                                            value={editPost.title}
+                                            onChange={(e) => setEditPost({ ...editPost, title: e.target.value })}
+                                            placeholder="제목"
+                                            required
+                                        />
+                                        <Textarea
+                                            value={editPost.content}
+                                            onChange={(e) => setEditPost({ ...editPost, content: e.target.value })}
+                                            placeholder="내용"
+                                            required
+                                        />
+                                        <Input
+                                            type="password"
+                                            value={editPost.password}
+                                            onChange={(e) => setEditPost({ ...editPost, password: e.target.value })}
+                                            placeholder="비밀번호"
+                                            required
+                                        />
+                                        <div className="flex justify-end space-x-2">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => setEditPost(null)}
+                                                disabled={isLoading}
+                                            >
+                                                취소
+                                            </Button>
+                                            <Button type="submit" disabled={isLoading}>
+                                                저장
+                                            </Button>
+                                        </div>
+                                    </form>
+                                ) : (
+                                    <>
+                                        <h3 className="font-bold">{post.title}</h3>
+                                        <p>{post.content}</p>
+                                        <p className="text-sm text-gray-500">
+                                            {new Date(post.createdAt).toLocaleString()}
+                                        </p>
+                                        <div className="flex justify-end space-x-2 mt-2">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() =>
+                                                    handleLikePost(post.id)
+                                                }
+                                            >
+                                                좋아요
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                onClick={() =>
+                                                    setEditPost({
+                                                        id: post.id,
+                                                        title: post.title,
+                                                        content: post.content,
+                                                        password: "",
+                                                    })
+                                                }
+                                            >
+                                                수정
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                onClick={() => {
+                                                    const password = prompt("비밀번호를 입력하세요");
+                                                    if (password) handleDeletePost(post.id, password);
+                                                }}
+                                            >
+                                                삭제
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="text-center text-gray-500">포스트가 없습니다.</div>
+                    )}
                 </div>
 
                 {/* 새 포스트 작성 */}
