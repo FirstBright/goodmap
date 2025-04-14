@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import CreateMarkerModal from "./CreateMarkerModal";
 import PostModal from "./PostModal";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface MarkerData {
   id: string;
@@ -16,12 +18,14 @@ interface MarkerData {
 
 export default function MapComponent() {
   const [markers, setMarkers] = useState<MarkerData[]>([]);
+  const [filteredMarkers, setFilteredMarkers] = useState<MarkerData[]>([]);
   const [selectedPosition, setSelectedPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<{ id: string; name: string } | null>(null);
   const [lastPosition, setLastPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchMarkers = async () => {
@@ -36,6 +40,7 @@ export default function MapComponent() {
         const data = await response.json();
         console.log("Fetched markers:", data);
         setMarkers(data);
+        setFilteredMarkers(data)
       } catch (err) {
         console.error("Error fetching markers:", err);
         setError("마커 데이터를 불러오지 못했습니다.");
@@ -68,6 +73,14 @@ export default function MapComponent() {
       });
     }
   }, []);
+  
+  // 마커 검색 기능
+  useEffect(() => {
+    const filtered = markers.filter((marker) =>
+      marker.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredMarkers(filtered);
+  }, [searchQuery, markers]);
 
   const MapClickHandler = () => {
     useMapEvents({
@@ -82,6 +95,14 @@ export default function MapComponent() {
         }
       },
     });
+    return null;
+  };
+  const MapFocus = () => {
+    const map = useMap();
+    if (filteredMarkers.length ===1) {
+      const {latitude, longitude} = filteredMarkers[0];
+      map.setView([latitude, longitude], 13);
+    }
     return null;
   };
 
@@ -100,7 +121,13 @@ export default function MapComponent() {
       setError("마커 목록을 갱신하지 못했습니다.");
     }
   };
-  console.log("Current state:", { selectedPosition, isCreateModalOpen, markers });
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+  const clearSearch = () => {
+    setSearchQuery("");
+    setFilteredMarkers(markers);
+  };
   if (isLoading) {
     return <div className="h-screen flex items-center justify-center">마커 로딩중...</div>;
   }
@@ -114,31 +141,54 @@ export default function MapComponent() {
   }
 
   return (
-    <div className="h-screen w-full">
-      {typeof window !== "undefined" && (
-        <MapContainer
-          center={lastPosition || [37.5665, 126.978]}
-          zoom={13}
-          style={{ height: "100%", width: "100%", zIndex: 0 }}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <MapClickHandler />
-          {markers.map((marker) => (
-            <Marker
-              key={marker.id}
-              position={[marker.latitude, marker.longitude]}
-              eventHandlers={{
-                click: () => setSelectedMarker({ id: marker.id, name: marker.name }),
-              }}
-            />
-          ))}
-        </MapContainer>
-      )}
+    <div className="relative h-screen w-full flex flex-col">
+      {/* 검색창 */}
+      <div className="p-4 flex items-center gap-2 z-[1000] bg-white shadow-md">
+        <Input
+          type="text"
+          placeholder="장소 이름으로 검색..."
+          value={searchQuery}
+          onChange={handleSearch}
+          className="w-full max-w-md"
+        />
+        {searchQuery && (
+          <Button variant="outline" onClick={clearSearch}>
+            초기화
+          </Button>
+        )}
+      </div>
 
-<CreateMarkerModal
+      {/* 지도 */}
+      <div className="flex-1 relative">
+        {typeof window !== "undefined" && (
+          <MapContainer
+            center={lastPosition || [37.5665, 126.978]}
+            zoom={13}
+            style={{ height: "100%", width: "100%", zIndex: 0 }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <MapClickHandler />
+            <MapFocus />
+            {filteredMarkers.map((marker) => (
+              <Marker
+                key={marker.id}
+                position={[marker.latitude, marker.longitude]}
+                eventHandlers={{
+                  click: () => {
+                    console.log("Marker clicked:", marker);
+                    setSelectedMarker({ id: marker.id, name: marker.name });
+                  },
+                }}
+              />
+            ))}
+          </MapContainer>
+        )}
+      </div>
+
+      <CreateMarkerModal
         isOpen={isCreateModalOpen}
         onClose={() => {
           console.log("Closing CreateMarkerModal");
