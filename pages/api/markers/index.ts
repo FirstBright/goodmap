@@ -5,7 +5,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log(`Received ${req.method} request to /api/markers`);
   if (req.method === "GET") {
     try {
-      const markers = await prisma.marker.findMany();
+      const { name } = req.query;
+      const markers = await prisma.marker.findMany({
+        where: name
+          ? { name: { contains: String(name), mode: "insensitive" } }
+          : {},
+        include: {
+          posts: {
+            select: { id: true }, // Minimal data to check if posts exist
+          },
+        },
+      });
       console.log("Returning markers:", markers);
       return res.status(200).json(markers);
     } catch (error) {
