@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -8,6 +8,13 @@ import CreateMarkerModal from "./CreateMarkerModal";
 import PostModal from "./PostModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      });
 
 interface MarkerData {
   id: string;
@@ -22,10 +29,32 @@ export default function MapComponent() {
   const [selectedPosition, setSelectedPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<{ id: string; name: string } | null>(null);
-  const [lastPosition, setLastPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const mapRef = useRef<L.Map | null>(null);
+  const [mapState, setMapState] = useState<{ lat: number; lng: number; zoom: number }>(() => {
+    if (typeof window === "undefined") {
+      return { lat: 37.5665, lng: 126.978, zoom: 13 };
+    }
+    try {
+      const saved = localStorage.getItem("mapState");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (
+          typeof parsed.lat === "number" &&
+          typeof parsed.lng === "number" &&
+          typeof parsed.zoom === "number"
+        ) {
+          console.log("Loaded map state from localStorage:", parsed);
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.error("Error parsing localStorage mapState:", err);
+    }
+    return { lat: 37.5665, lng: 126.978, zoom: 13 };
+  });
 
   useEffect(() => {
     const fetchMarkers = async () => {
@@ -52,28 +81,15 @@ export default function MapComponent() {
     fetchMarkers();
   }, []);
 
-  // 로컬스토리지에서 마지막 위치 복원
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedPosition = localStorage.getItem("lastPosition");
-      if (savedPosition) {
-        setLastPosition(JSON.parse(savedPosition));
-      }
+    if (mapRef.current) {
+      console.log("Map initialized:", mapRef.current.getCenter());
+      mapRef.current.invalidateSize(); // Fix map sizing issues
     }
   }, []);
 
-  // Leaflet 아이콘 설정
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
-    }
-  }, []);
-  
+
+
   // 마커 검색 기능
   useEffect(() => {
     const filtered = markers.filter((marker) =>
@@ -83,24 +99,35 @@ export default function MapComponent() {
   }, [searchQuery, markers]);
 
   const MapClickHandler = () => {
-    useMapEvents({
-      click(e) {
-        e.originalEvent.stopPropagation();
+    const map = useMapEvents({
+      click(e) {        
         const { lat, lng } = e.latlng;
         console.log("Map clicked at:", { lat, lng });
         setSelectedPosition({ lat, lng });
         setIsCreateModalOpen(true);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("lastPosition", JSON.stringify({ lat, lng }));
+      },
+      moveend() {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        const newState = { lat: center.lat, lng: center.lng, zoom };
+        console.log("Map moved to:", newState);
+        try {
+          localStorage.setItem("mapState", JSON.stringify(newState));
+          console.log("Saved map state to localStorage:", newState);
+        } catch (err) {
+          console.error("Error saving to localStorage:", err);
         }
       },
     });
+    if (!mapRef.current) {
+      mapRef.current = map;
+    }
     return null;
   };
   const MapFocus = () => {
     const map = useMap();
-    if (filteredMarkers.length ===1) {
-      const {latitude, longitude} = filteredMarkers[0];
+    if (filteredMarkers.length === 1) {
+      const { latitude, longitude } = filteredMarkers[0];
       map.setView([latitude, longitude], 13);
     }
     return null;
@@ -108,9 +135,9 @@ export default function MapComponent() {
 
   const handleMarkerCreated = async () => {
     try {
-        console.log("Refreshing markers from /api/markers");
-        const response = await fetch("/api/markers", { method: "GET" });
-        console.log("GET /api/markers status:", response.status);
+      console.log("Refreshing markers from /api/markers");
+      const response = await fetch("/api/markers", { method: "GET" });
+      console.log("GET /api/markers status:", response.status);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -129,7 +156,7 @@ export default function MapComponent() {
     setFilteredMarkers(markers);
   };
   if (isLoading) {
-    return <div className="h-screen flex items-center justify-center">마커 로딩중...</div>;
+    return <div className="h-screen flex items-center justify-center">로딩중...</div>;
   }
 
   if (error) {
@@ -141,30 +168,34 @@ export default function MapComponent() {
   }
 
   return (
-    <div className="relative h-screen w-1080p flex flex-col">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100 ">
       {/* 검색창 */}
-      <div className="p-4 flex items-center gap-2 z-[1000] bg-white shadow-md sm:p-6">
-        <Input
-          type="text"
-          placeholder="장소 이름으로 검색..."
-          value={searchQuery}
-          onChange={handleSearch}
-          className="w-full max-w-md"
-        />
-        {searchQuery && (
-          <Button variant="outline" onClick={clearSearch} className="hidden sm:block">
-            초기화
-          </Button>
-        )}
+      <div className="w-full max-w-[1080px] px-4 py-4 flex justify-center items-center gap-2 bg-white shadow-md z-[1000] sm:px-6">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Input
+            type="text"
+            placeholder="장소 이름으로 검색..."
+            value={searchQuery}
+            onChange={handleSearch}
+            className="w-full sm:w-96"
+          />
+          {searchQuery && (
+            <Button variant="outline" onClick={clearSearch} >
+              초기화
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 지도 */}
-      <div className="flex-1 relative">
+      <div className="w-full max-w-[1080px] h-[600px] relative my-4 mx-auto px-4 sm:px-0">
         {typeof window !== "undefined" && (
           <MapContainer
-            center={lastPosition || [37.5665, 126.978]}
-            zoom={13}
+            center={[mapState.lat, mapState.lng]}
+            zoom={mapState.zoom}
             style={{ height: "100%", width: "100%", zIndex: 0 }}
+            className="rounded-lg shadow-md"
+            ref={mapRef}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
