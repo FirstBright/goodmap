@@ -54,7 +54,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
             }
         } catch (error) {
             console.error("Error fetching posts:", error);
-            setFetchError("포스트를 불러오는 데 실패했습니다.");
+            setFetchError("글을 불러오는 데 실패했습니다.");
         } finally {
             setIsLoading(false);
         }
@@ -79,7 +79,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
 
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.message || "포스트 생성 실패")
+                throw new Error(data.message || "글 생성 실패")
             }
 
             setNewPost({ title: "", content: "", password: "" });
@@ -87,7 +87,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
             fetchPosts();
         } catch (error) {
             console.error("Error creating post:", error);
-            setFetchError(error instanceof Error ? error.message : "포스트 생성 중 오류가 발생했습니다.");
+            setFetchError(error instanceof Error ? error.message : "글 생성 중 오류가 발생했습니다.");
         } finally {
             setIsLoading(false);
         }
@@ -112,14 +112,14 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
 
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.message || "포스트 수정 실패");
+                throw new Error(data.message || "글 수정 실패");
             }
 
             setEditPost(null);
             fetchPosts();
         } catch (error) {
             console.error("Error editing post:", error);
-            alert("포스트 수정 중 오류가 발생했습니다.");
+            alert("글 수정 중 오류가 발생했습니다.");
         } finally {
             setIsLoading(false);
         }
@@ -137,13 +137,13 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
 
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.message || "포스트 삭제 실패");
+                throw new Error(data.message || "글 삭제 실패");
             }
 
             fetchPosts();
         } catch (error) {
             console.error("Error deleting post:", error);
-            setFetchError(error instanceof Error ? error.message : "포스트 삭제 중 오류가 발생했습니다.");
+            setFetchError(error instanceof Error ? error.message : "글 삭제 중 오류가 발생했습니다.");
         } finally {
             setIsLoading(false);
         }
@@ -165,7 +165,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
             fetchPosts();
         } catch (error) {
             console.error("Error liking post:", error);
-            setFetchError(error instanceof Error ? error.message : "포스트 좋아요 중 오류가 발생했습니다.");
+            setFetchError(error instanceof Error ? error.message : "글 좋아요 중 오류가 발생했습니다.");
         } finally {
             setIsLoading(false);
         }
@@ -182,12 +182,12 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                     <div className="text-red-500 mb-4">{fetchError}</div>
                 )}
 
-                {/* 포스트 목록 */}
+                {/* 글 목록 */}
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                     {!isCreateFormOpen && !editPost && (
                         <div className="flex justify-end">
                             <Button onClick={() => setIsCreateFormOpen(true)} disabled={isLoading}>
-                                포스트 작성
+                                글 작성
                             </Button>
                         </div>
                     )}
@@ -278,11 +278,11 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                             </div>
                         ))
                     ) : (
-                        <div className="text-center text-gray-500">포스트가 없습니다.</div>
+                        <div className="text-center text-gray-500">글이 없습니다.</div>
                     )}
                 </div>
 
-                {/* 새 포스트 작성 */}
+                {/* 새 글 작성 */}
                 {isCreateFormOpen && (
                     <form onSubmit={handleCreatePost} className="space-y-4 mt-4">
                         <Input
