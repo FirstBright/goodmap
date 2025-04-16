@@ -52,7 +52,7 @@ export default function MapComponent() {
         zoom: number
     }>(() => {
         if (typeof window === "undefined") {
-            return { lat: 37.5665, lng: 126.978, zoom: 13 }
+            return { lat: 38.5352, lng: 77.0211, zoom: 13 }
         }
         try {
             const saved = localStorage.getItem("mapState")
