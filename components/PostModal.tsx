@@ -465,7 +465,6 @@ export default function PostModal({
                                         })
                                     }
                                     placeholder='제목'
-                                    required
                                     disabled={isLoading}
                                 />
                                 <Textarea
