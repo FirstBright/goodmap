@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import useSWR from "swr"
 import { useRouter } from "next/router"
+import { toast } from "react-toastify"
 interface Post {
     id: string
     title: string
@@ -214,12 +215,13 @@ export default function PostModal({
 
             if (!response.ok) {
                 const data = await response.json()
-                throw new Error(data.message || "마커 삭제 실패")
+                toast.error(data.message || "마커 삭제 실패")
             }
 
             // Close modal and redirect to home
             onClose()
             router.push("/")
+            toast.success("마커가 삭제되었습니다.")
         } catch (error) {
             console.error("Error deleting marker:", error)
             setFetchError(
