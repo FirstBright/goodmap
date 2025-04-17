@@ -70,7 +70,7 @@ export default function MapComponent() {
         } catch (err) {
             console.error("Error parsing localStorage mapState:", err)
         }
-        return { lat: 37.5665, lng: 126.978, zoom: 13 }
+        return { lat: 38.5352, lng: 77.0211, zoom: 13 }
     })
 
     useEffect(() => {
