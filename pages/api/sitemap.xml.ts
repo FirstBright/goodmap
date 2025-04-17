@@ -5,8 +5,15 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
+    // Debug: Log req and res
+    console.log("Handler invoked with:", { req: !!req, res: !!res })
+
+    if (!res) {
+        console.error("Response object is undefined")
+        throw new Error("Response object is undefined")
+    }
+
     try {
-        // Log to debug Prisma query
         console.log("Fetching markers...")
         const markers = await prisma.marker.findMany({
             select: { id: true, createdAt: true },
@@ -39,7 +46,6 @@ export default async function handler(
         res.status(200).send(sitemap)
     } catch (error) {
         console.error("Error generating sitemap:", error)
-        // Fallback response to avoid undefined res
-        return res.status(500).json({ error: "Failed to generate sitemap" })
+        res.status(500).json({ error: "Failed to generate sitemap" })
     }
 }
