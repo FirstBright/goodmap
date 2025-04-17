@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /markers/
-Sitemap: https://overcome0.be/sitemap.xml
+Allow: /
+Sitemap: https://overcome0.be/api/sitemap.xml
