@@ -60,21 +60,40 @@ export default function MarkerPage({ marker, posts }: Props) {
             reviewBody: post.content,
             datePublished: post.createdAt,
         })),
+        url: `https://overcome0.be/markers/${marker.id}`,
     }
 
     return (
         <>
             <Head>
-                <title>{`${marker.name} - GoodMap`}</title>
+                <title>{marker.name} - GoodMap</title>
                 <meta
                     name='description'
-                    content={`Explore posts about ${marker.name} on GoodMap.`}
+                    content={`Explore posts and share experiences at ${marker.name} on GoodMap.`}
                 />
                 <meta
                     name='keywords'
-                    content={`${marker.name}, map, posts, GoodMap`}
+                    content={`GoodMap, ${marker.name}, map, posts`}
                 />
                 <meta name='robots' content='index, follow' />
+                <link
+                    rel='canonical'
+                    href={`https://overcome0.be/markers/${marker.id}`}
+                />
+                <meta property='og:type' content='website' />
+                <meta
+                    property='og:title'
+                    content={`${marker.name} - GoodMap`}
+                />
+                <meta
+                    property='og:description'
+                    content={`Explore posts and share experiences at ${marker.name} on GoodMap.`}
+                />
+                <meta
+                    property='og:url'
+                    content={`https://overcome0.be/markers/${marker.id}`}
+                />
+                <meta property='og:site_name' content='GoodMap' />
                 <script
                     type='application/ld+json'
                     dangerouslySetInnerHTML={{
