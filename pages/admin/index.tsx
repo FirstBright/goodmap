@@ -74,7 +74,6 @@ export default function AdminPage() {
         try {
             const response = await fetch(`/api/markers/${id}`, {
                 method: "DELETE",
-                headers: { Authorization: `Bearer ${session?.user?.id}` },
             });
 
             if (!response.ok) {

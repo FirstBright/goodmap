@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import useSWR from "swr"
+import { useRouter } from "next/router"
 interface Post {
     id: string
     title: string
@@ -36,6 +37,7 @@ export default function PostModal({
     initialPosts = [],
     editId,
 }: PostModalProps) {
+    const router = useRouter()
     const [posts, setPosts] = useState<Post[]>(initialPosts)
     const [newPost, setNewPost] = useState({
         title: "",
@@ -200,6 +202,35 @@ export default function PostModal({
             setIsLoading(false)
         }
     }
+    const handleDeleteMarker = async () => {
+        if (!confirm("이 마커를 삭제하시겠습니까?")) return
+
+        setIsLoading(true)
+        setFetchError(null)
+        try {
+            const response = await fetch(`/api/markers/${markerId}`, {
+                method: "DELETE",
+            })
+
+            if (!response.ok) {
+                const data = await response.json()
+                throw new Error(data.message || "마커 삭제 실패")
+            }
+
+            // Close modal and redirect to home
+            onClose()
+            router.push("/")
+        } catch (error) {
+            console.error("Error deleting marker:", error)
+            setFetchError(
+                error instanceof Error
+                    ? error.message
+                    : "마커 삭제 중 오류가 발생했습니다."
+            )
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -218,7 +249,16 @@ export default function PostModal({
                 {/* 글 목록 */}
                 <div className='space-y-4 max-h-[60vh] overflow-y-auto'>
                     {!isCreateFormOpen && !editPost && (
-                        <div className='flex justify-end'>
+                        <div className='flex justify-end space-x-2 mb-4'>
+                            {posts.length === 0 && (
+                                <Button
+                                    variant='destructive'
+                                    onClick={handleDeleteMarker}
+                                    disabled={isLoading}
+                                >
+                                    삭제
+                                </Button>
+                            )}
                             <Button
                                 onClick={() => setIsCreateFormOpen(true)}
                                 disabled={isLoading}
@@ -251,7 +291,6 @@ export default function PostModal({
                                                 })
                                             }
                                             placeholder='제목'
-                                            required
                                         />
                                         <Textarea
                                             value={editPost.content}
