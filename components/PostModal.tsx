@@ -30,6 +30,21 @@ interface PostModalProps {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
+const trackEvent = (action: string, label: string) => {
+    if (typeof window !== "undefined") {
+        setTimeout(() => {
+            if (window.gtag) {
+                window.gtag("event", action, {
+                    event_category: "Marker",
+                    event_label: label,
+                })
+            } else {
+                console.warn("Google Analytics gtag not available")
+            }
+        }, 1000)
+    }
+}
+
 export default function PostModal({
     isOpen,
     onClose,
@@ -103,7 +118,7 @@ export default function PostModal({
                 const data = await response.json()
                 throw new Error(data.message || "글 생성 실패")
             }
-
+            trackEvent("post_created", markerName)
             setNewPost({ title: "", content: "", password: "" })
             setIsCreateFormOpen(false)
             mutate() // Revalidate SWR cache
@@ -140,7 +155,7 @@ export default function PostModal({
                 const data = await response.json()
                 throw new Error(data.message || "글 수정 실패")
             }
-
+            trackEvent("post_edited", editPost.title)
             setEditPost(null)
             mutate()
         } catch (error) {
@@ -165,7 +180,7 @@ export default function PostModal({
                 const data = await response.json()
                 throw new Error(data.message || "글 삭제 실패")
             }
-
+            trackEvent("post_deleted", postId)
             mutate()
         } catch (error) {
             console.error("Error deleting post:", error)
@@ -191,7 +206,7 @@ export default function PostModal({
                 const data = await response.json()
                 throw new Error(data.message || "좋아요 실패")
             }
-
+            trackEvent("post_liked", postId)
             mutate()
         } catch (error) {
             console.error("Error liking post:", error)
@@ -217,7 +232,7 @@ export default function PostModal({
                 toast.error(data.message || "마커 삭제 실패")
             }
 
-            // Close modal and redirect to home
+            trackEvent("marker_deleted", markerName)
             onClose()
             router.push("/")
             toast.success("마커가 삭제되었습니다.")
@@ -246,7 +261,7 @@ export default function PostModal({
                 {fetchError && (
                     <div className='text-red-500 mb-4'>{fetchError}</div>
                 )}
-                {isDeleteConfirmOpen ? (                  
+                {isDeleteConfirmOpen ? (
                     <div className='space-y-4'>
                         <p>이 마커를 삭제하시겠습니까?</p>
                         <div className='flex justify-end space-x-2'>
