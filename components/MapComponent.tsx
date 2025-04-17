@@ -52,7 +52,7 @@ export default function MapComponent() {
         zoom: number
     }>(() => {
         if (typeof window === "undefined") {
-            return { lat: 38.5352, lng: 77.0211, zoom: 13 }
+            return { lat: 38.5352, lng: 282.9600, zoom: 13 }
         }
         try {
             const saved = localStorage.getItem("mapState")
@@ -70,7 +70,7 @@ export default function MapComponent() {
         } catch (err) {
             console.error("Error parsing localStorage mapState:", err)
         }
-        return { lat: 38.5352, lng: 77.0211, zoom: 13 }
+        return { lat: 38.5352, lng: 282.9600, zoom: 13 }
     })
 
     useEffect(() => {
