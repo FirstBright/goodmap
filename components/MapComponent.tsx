@@ -11,9 +11,9 @@ import {
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import CreateMarkerModal from "./CreateMarkerModal"
-import PostModal from "./PostModal"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/router"
 
 L.Icon.Default.prototype.options.iconUrl = ""
 L.Icon.Default.mergeOptions({
@@ -38,14 +38,11 @@ export default function MapComponent() {
         lng: number
     } | null>(null)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-    const [selectedMarker, setSelectedMarker] = useState<{
-        id: string
-        name: string
-    } | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState("")
     const mapRef = useRef<L.Map | null>(null)
+    const router = useRouter()
     const [mapState] = useState<{
         lat: number
         lng: number
@@ -158,6 +155,7 @@ export default function MapComponent() {
             }
             const data = await response.json()
             setMarkers(data)
+            setFilteredMarkers(data)
         } catch (err) {
             console.error("Error refreshing markers:", err)
             setError("마커 목록을 갱신하지 못했습니다.")
@@ -229,10 +227,7 @@ export default function MapComponent() {
                                 eventHandlers={{
                                     click: () => {
                                         console.log("Marker clicked:", marker)
-                                        setSelectedMarker({
-                                            id: marker.id,
-                                            name: marker.name,
-                                        })
+                                        router.push(`/markers/${marker.id}`)
                                     },
                                 }}
                             />
@@ -251,18 +246,6 @@ export default function MapComponent() {
                 position={selectedPosition || { lat: 0, lng: 0 }}
                 onMarkerCreated={handleMarkerCreated}
             />
-
-            {selectedMarker && (
-                <PostModal
-                    isOpen={!!selectedMarker}
-                    onClose={() => {
-                        console.log("Closing PostModal")
-                        setSelectedMarker(null)
-                    }}
-                    markerId={selectedMarker.id}
-                    markerName={selectedMarker.name}
-                />
-            )}
         </div>
     )
 }

@@ -1,104 +1,126 @@
-'use client'
-import { useState, useEffect, useCallback } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-
+"use client"
+import { useState, useEffect } from "react"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import useSWR from "swr"
 interface Post {
-    id: string;
-    title: string;
-    content: string;
-    createdAt: string;
+    id: string
+    title: string
+    content: string
+    createdAt: string
 }
 
 interface PostModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    markerId: string;
-    markerName: string;
-    editId?: string;
+    isOpen: boolean
+    onClose: () => void
+    markerId: string
+    markerName: string
+    initialPosts?: Post[]
+    editId?: string
 }
 
-export default function PostModal({ isOpen, onClose, markerId, markerName, editId }: PostModalProps) {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [newPost, setNewPost] = useState({ title: "", content: "", password: "" });
-    const [editPost, setEditPost] = useState<{ id: string; title: string; content: string; password: string } | null>(null);
-    const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [fetchError, setFetchError] = useState<string | null>(null);
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
+export default function PostModal({
+    isOpen,
+    onClose,
+    markerId,
+    markerName,
+    initialPosts = [],
+    editId,
+}: PostModalProps) {
+    const [posts, setPosts] = useState<Post[]>(initialPosts)
+    const [newPost, setNewPost] = useState({
+        title: "",
+        content: "",
+        password: "",
+    })
+    const [editPost, setEditPost] = useState<{
+        id: string
+        title: string
+        content: string
+        password: string
+    } | null>(null)
+    const [isCreateFormOpen, setIsCreateFormOpen] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const [fetchError, setFetchError] = useState<string | null>(null)
 
-
-    const fetchPosts = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            setFetchError(null);
-            console.log(`Fetching posts for markerId: ${markerId}`);
-            const response = await fetch(`/api/markers/${markerId}/posts`, { method: "GET" });
-            console.log(`GET /api/markers/${markerId}/posts status: ${response.status}`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch posts: ${response.status}`);
-            }
-            const data = await response.json();
-            console.log("Fetched posts:", data);
-            setPosts(data);
-
-            // Prefill edit form if editId is provided
-            if (editId) {
-                const post = data.find((p: Post) => p.id === editId);
-                if (post) {
-                    console.log("Prefilling edit form for editId:", editId);
-                    setEditPost({ id: post.id, title: post.title, content: post.content, password: "" });
-                }
-            }
-        } catch (error) {
-            console.error("Error fetching posts:", error);
-            setFetchError("글을 불러오는 데 실패했습니다.");
-        } finally {
-            setIsLoading(false);
+    // Use SWR for client-side data fetching
+    const { data, error, mutate } = useSWR(
+        `/api/markers/${markerId}/posts`,
+        fetcher,
+        {
+            fallbackData: initialPosts,
+            revalidateOnFocus: false,
         }
-    }, [markerId, editId]);
+    )
     useEffect(() => {
-        if (isOpen && markerId) {
-            fetchPosts();
+        if (data) {
+            setPosts(data)
         }
-    }, [isOpen, markerId, fetchPosts]);
+        if (error) {
+            setFetchError("글을 불러오는 데 실패했습니다.")
+        }
+    }, [data, error])
+    useEffect(() => {
+        if (isOpen && editId && posts.length) {
+            const post = posts.find((p) => p.id === editId)
+            if (post) {
+                setEditPost({
+                    id: post.id,
+                    title: post.title,
+                    content: post.content,
+                    password: "",
+                })
+            }
+        }
+    }, [isOpen, editId, posts])
 
     const handleCreatePost = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setFetchError(null);
+        e.preventDefault()
+        setIsLoading(true)
+        setFetchError(null)
 
         try {
             const response = await fetch(`/api/markers/${markerId}/posts`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newPost),
-            });
+            })
 
             if (!response.ok) {
-                const data = await response.json();
+                const data = await response.json()
                 throw new Error(data.message || "글 생성 실패")
             }
 
-            setNewPost({ title: "", content: "", password: "" });
-            setIsCreateFormOpen(false);
-            fetchPosts();
+            setNewPost({ title: "", content: "", password: "" })
+            setIsCreateFormOpen(false)
+            mutate() // Revalidate SWR cache
         } catch (error) {
-            console.error("Error creating post:", error);
-            setFetchError(error instanceof Error ? error.message : "글 생성 중 오류가 발생했습니다.");
+            console.error("Error creating post:", error)
+            setFetchError(
+                error instanceof Error
+                    ? error.message
+                    : "글 생성 중 오류가 발생했습니다."
+            )
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
-    };
+    }
 
     const handleEditPost = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!editPost) return;
+        e.preventDefault()
+        if (!editPost) return
 
-        setIsLoading(true);
-        setFetchError(null);
+        setIsLoading(true)
+        setFetchError(null)
         try {
             const response = await fetch(`/api/posts/${editPost.id}`, {
                 method: "PATCH",
@@ -108,139 +130,187 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                     content: editPost.content,
                     password: editPost.password,
                 }),
-            });
+            })
 
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || "글 수정 실패");
+                const data = await response.json()
+                throw new Error(data.message || "글 수정 실패")
             }
 
-            setEditPost(null);
-            fetchPosts();
+            setEditPost(null)
+            mutate()
         } catch (error) {
-            console.error("Error editing post:", error);
-            alert("글 수정 중 오류가 발생했습니다.");
+            console.error("Error editing post:", error)
+            alert("글 수정 중 오류가 발생했습니다.")
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
-    };
+    }
 
     const handleDeletePost = async (postId: string, password: string) => {
-        setIsLoading(true);
-        setFetchError(null);
+        setIsLoading(true)
+        setFetchError(null)
         try {
             const response = await fetch(`/api/posts/${postId}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ password }),
-            });
+            })
 
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || "글 삭제 실패");
+                const data = await response.json()
+                throw new Error(data.message || "글 삭제 실패")
             }
 
-            fetchPosts();
+            mutate()
         } catch (error) {
-            console.error("Error deleting post:", error);
-            setFetchError(error instanceof Error ? error.message : "글 삭제 중 오류가 발생했습니다.");
+            console.error("Error deleting post:", error)
+            setFetchError(
+                error instanceof Error
+                    ? error.message
+                    : "글 삭제 중 오류가 발생했습니다."
+            )
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
-    };
+    }
 
     const handleLikePost = async (postId: string) => {
-        setIsLoading(true);
-        setFetchError(null);
+        setIsLoading(true)
+        setFetchError(null)
         try {
             const response = await fetch(`/api/posts/${postId}/likes`, {
                 method: "POST",
-            });
+            })
 
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || "좋아요 실패");
+                const data = await response.json()
+                throw new Error(data.message || "좋아요 실패")
             }
 
-            fetchPosts();
+            mutate()
         } catch (error) {
-            console.error("Error liking post:", error);
-            setFetchError(error instanceof Error ? error.message : "글 좋아요 중 오류가 발생했습니다.");
+            console.error("Error liking post:", error)
+            setFetchError(
+                error instanceof Error
+                    ? error.message
+                    : "글 좋아요 중 오류가 발생했습니다."
+            )
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
     }
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="z-[1000] max-w-md sm:max-w-lg" aria-describedby="dialog-description">
+            <DialogContent
+                className='z-[1000] max-w-md sm:max-w-lg'
+                aria-describedby='dialog-description'
+            >
                 <DialogHeader>
                     <DialogTitle>{markerName}</DialogTitle>
                 </DialogHeader>
 
                 {fetchError && (
-                    <div className="text-red-500 mb-4">{fetchError}</div>
+                    <div className='text-red-500 mb-4'>{fetchError}</div>
                 )}
 
                 {/* 글 목록 */}
-                <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                <div className='space-y-4 max-h-[60vh] overflow-y-auto'>
                     {!isCreateFormOpen && !editPost && (
-                        <div className="flex justify-end">
-                            <Button onClick={() => setIsCreateFormOpen(true)} disabled={isLoading}>
+                        <div className='flex justify-end'>
+                            <Button
+                                onClick={() => setIsCreateFormOpen(true)}
+                                disabled={isLoading}
+                            >
                                 글 작성
                             </Button>
                         </div>
                     )}
                     {isLoading && !posts.length ? (
-                        <div className="text-center text-gray-500">로딩중...</div>
+                        <div className='text-center text-gray-500'>
+                            로딩중...
+                        </div>
                     ) : posts.length > 0 ? (
                         posts.map((post) => (
-                            <div key={post.id} className="border p-4 rounded-lg">
+                            <div
+                                key={post.id}
+                                className='border p-4 rounded-lg'
+                            >
                                 {editPost?.id === post.id ? (
-                                    <form onSubmit={handleEditPost} className="space-y-2">
+                                    <form
+                                        onSubmit={handleEditPost}
+                                        className='space-y-2'
+                                    >
                                         <Input
                                             value={editPost.title}
-                                            onChange={(e) => setEditPost({ ...editPost, title: e.target.value })}
-                                            placeholder="제목"
+                                            onChange={(e) =>
+                                                setEditPost({
+                                                    ...editPost,
+                                                    title: e.target.value,
+                                                })
+                                            }
+                                            placeholder='제목'
                                             required
                                         />
                                         <Textarea
                                             value={editPost.content}
-                                            onChange={(e) => setEditPost({ ...editPost, content: e.target.value })}
-                                            placeholder="내용"
+                                            onChange={(e) =>
+                                                setEditPost({
+                                                    ...editPost,
+                                                    content: e.target.value,
+                                                })
+                                            }
+                                            placeholder='내용'
                                             required
                                         />
                                         <Input
-                                            type="password"
+                                            type='password'
                                             value={editPost.password}
-                                            onChange={(e) => setEditPost({ ...editPost, password: e.target.value })}
-                                            placeholder="비밀번호"
+                                            onChange={(e) =>
+                                                setEditPost({
+                                                    ...editPost,
+                                                    password: e.target.value,
+                                                })
+                                            }
+                                            placeholder='비밀번호'
                                             required
                                         />
-                                        <div className="flex justify-end space-x-2">
+                                        <div className='flex justify-end space-x-2'>
                                             <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={() => setEditPost(null)}
+                                                type='button'
+                                                variant='outline'
+                                                onClick={() =>
+                                                    setEditPost(null)
+                                                }
                                                 disabled={isLoading}
                                             >
                                                 취소
                                             </Button>
-                                            <Button type="submit" disabled={isLoading}>
+                                            <Button
+                                                type='submit'
+                                                disabled={isLoading}
+                                            >
                                                 저장
                                             </Button>
                                         </div>
                                     </form>
                                 ) : (
                                     <>
-                                        <h3 className="font-bold">{post.title}</h3>
-                                        <p className="break-words">{post.content}</p>
-                                        <p className="text-sm text-gray-500">
-                                            {new Date(post.createdAt).toLocaleString()}
+                                        <h3 className='font-bold'>
+                                            {post.title}
+                                        </h3>
+                                        <p className='break-words'>
+                                            {post.content}
                                         </p>
-                                        <div className="flex justify-end space-x-2 mt-2">
+                                        <p className='text-sm text-gray-500'>
+                                            {new Date(
+                                                post.createdAt
+                                            ).toLocaleString()}
+                                        </p>
+                                        <div className='flex justify-end space-x-2 mt-2'>
                                             <Button
-                                                variant="outline"
+                                                variant='outline'
                                                 onClick={() =>
                                                     handleLikePost(post.id)
                                                 }
@@ -249,7 +319,7 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                                                 좋아요
                                             </Button>
                                             <Button
-                                                variant="outline"
+                                                variant='outline'
                                                 onClick={() =>
                                                     setEditPost({
                                                         id: post.id,
@@ -263,10 +333,17 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                                                 수정
                                             </Button>
                                             <Button
-                                                variant="destructive"
+                                                variant='destructive'
                                                 onClick={() => {
-                                                    const password = prompt("비밀번호를 입력하세요");
-                                                    if (password) handleDeletePost(post.id, password);
+                                                    const password =
+                                                        prompt(
+                                                            "비밀번호를 입력하세요"
+                                                        )
+                                                    if (password)
+                                                        handleDeletePost(
+                                                            post.id,
+                                                            password
+                                                        )
                                                 }}
                                                 disabled={isLoading}
                                             >
@@ -278,46 +355,66 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                             </div>
                         ))
                     ) : (
-                        <div className="text-center text-gray-500">글이 없습니다.</div>
+                        <div className='text-center text-gray-500'>
+                            글이 없습니다.
+                        </div>
                     )}
                 </div>
 
                 {/* 새 글 작성 */}
                 {isCreateFormOpen && (
-                    <form onSubmit={handleCreatePost} className="space-y-4 mt-4">
+                    <form
+                        onSubmit={handleCreatePost}
+                        className='space-y-4 mt-4'
+                    >
                         <Input
                             value={newPost.title}
-                            onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                            placeholder="제목"
+                            onChange={(e) =>
+                                setNewPost({
+                                    ...newPost,
+                                    title: e.target.value,
+                                })
+                            }
+                            placeholder='제목'
                             required
                             disabled={isLoading}
                         />
                         <Textarea
                             value={newPost.content}
-                            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                            placeholder="내용"
+                            onChange={(e) =>
+                                setNewPost({
+                                    ...newPost,
+                                    content: e.target.value,
+                                })
+                            }
+                            placeholder='내용'
                             required
                             disabled={isLoading}
-                            className="min-h-[100px]"
+                            className='min-h-[100px]'
                         />
                         <Input
-                            type="password"
+                            type='password'
                             value={newPost.password}
-                            onChange={(e) => setNewPost({ ...newPost, password: e.target.value })}
-                            placeholder="비밀번호"
+                            onChange={(e) =>
+                                setNewPost({
+                                    ...newPost,
+                                    password: e.target.value,
+                                })
+                            }
+                            placeholder='비밀번호'
                             required
                             disabled={isLoading}
                         />
-                        <div className="flex justify-end space-x-2">
+                        <div className='flex justify-end space-x-2'>
                             <Button
-                                type="button"
-                                variant="outline"
+                                type='button'
+                                variant='outline'
                                 onClick={() => setIsCreateFormOpen(false)}
                                 disabled={isLoading}
                             >
                                 취소
                             </Button>
-                            <Button type="submit" disabled={isLoading}>
+                            <Button type='submit' disabled={isLoading}>
                                 작성
                             </Button>
                         </div>
@@ -325,5 +422,5 @@ export default function PostModal({ isOpen, onClose, markerId, markerName, editI
                 )}
             </DialogContent>
         </Dialog>
-    );
+    )
 }
