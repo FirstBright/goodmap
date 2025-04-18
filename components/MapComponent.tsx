@@ -14,6 +14,7 @@ import CreateMarkerModal from "./CreateMarkerModal"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/router"
+import { getLanguageText } from "@/utils/language"
 
 L.Icon.Default.prototype.options.iconUrl = ""
 L.Icon.Default.mergeOptions({
@@ -43,6 +44,8 @@ export default function MapComponent() {
     const [searchQuery, setSearchQuery] = useState("")
     const mapRef = useRef<L.Map | null>(null)
     const router = useRouter()
+    const text = getLanguageText()
+
     const [mapState] = useState<{
         lat: number
         lng: number
@@ -86,14 +89,14 @@ export default function MapComponent() {
                 setFilteredMarkers(data)
             } catch (err) {
                 console.error("Error fetching markers:", err)
-                setError("마커 데이터를 불러오지 못했습니다.")
+                setError(text.errorLoadingMarkers)
             } finally {
                 setIsLoading(false)
             }
         }
 
         fetchMarkers()
-    }, [])
+    }, [text.errorLoadingMarkers])
 
     useEffect(() => {
         if (mapRef.current) {
@@ -158,7 +161,7 @@ export default function MapComponent() {
             setFilteredMarkers(data)
         } catch (err) {
             console.error("Error refreshing markers:", err)
-            setError("마커 목록을 갱신하지 못했습니다.")
+            setError(text.errorLoadingMarkers)
         }
     }
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,7 +174,7 @@ export default function MapComponent() {
     if (isLoading) {
         return (
             <div className='h-screen flex items-center justify-center'>
-                로딩중...
+                {text.loading}
             </div>
         )
     }
@@ -191,14 +194,14 @@ export default function MapComponent() {
                 <div className='flex items-center gap-2 w-full sm:w-auto'>
                     <Input
                         type='text'
-                        placeholder='장소 이름으로 검색...'
+                        placeholder={text.searchPlaceholder}
                         value={searchQuery}
                         onChange={handleSearch}
                         className='w-full sm:w-96'
                     />
                     {searchQuery && (
                         <Button variant='outline' onClick={clearSearch}>
-                            초기화
+                            {text.reset}
                         </Button>
                     )}
                 </div>

@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import useSWR from "swr"
 import { useRouter } from "next/router"
 import { toast } from "react-toastify"
+import { getLanguageText } from "@/utils/language"
 interface Post {
     id: string
     title: string
@@ -70,6 +71,7 @@ export default function PostModal({
     const [isLoading, setIsLoading] = useState(false)
     const [fetchError, setFetchError] = useState<string | null>(null)
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+    const text = getLanguageText()
 
     // Use SWR for client-side data fetching
     const { data, error, mutate } = useSWR(
@@ -85,9 +87,9 @@ export default function PostModal({
             setPosts(data)
         }
         if (error) {
-            setFetchError("글을 불러오는 데 실패했습니다.")
+            setFetchError(text.postError)
         }
-    }, [data, error])
+    }, [data, error, text.postError])
     useEffect(() => {
         if (isOpen && editId && posts.length) {
             const post = posts.find((p) => p.id === editId)
@@ -116,7 +118,7 @@ export default function PostModal({
 
             if (!response.ok) {
                 const data = await response.json()
-                throw new Error(data.message || "글 생성 실패")
+                throw new Error(data.message || text.createPostError)
             }
             trackEvent("post_created", markerName)
             setNewPost({ title: "", content: "", password: "" })
@@ -125,9 +127,7 @@ export default function PostModal({
         } catch (error) {
             console.error("Error creating post:", error)
             setFetchError(
-                error instanceof Error
-                    ? error.message
-                    : "글 생성 중 오류가 발생했습니다."
+                error instanceof Error ? error.message : text.createPostError
             )
         } finally {
             setIsLoading(false)
@@ -153,14 +153,14 @@ export default function PostModal({
 
             if (!response.ok) {
                 const data = await response.json()
-                throw new Error(data.message || "글 수정 실패")
+                throw new Error(data.message || text.editPostError)
             }
             trackEvent("post_edited", editPost.title)
             setEditPost(null)
             mutate()
         } catch (error) {
             console.error("Error editing post:", error)
-            alert("글 수정 중 오류가 발생했습니다.")
+            alert(error instanceof Error ? error.message : text.editPostError)
         } finally {
             setIsLoading(false)
         }
@@ -178,16 +178,14 @@ export default function PostModal({
 
             if (!response.ok) {
                 const data = await response.json()
-                throw new Error(data.message || "글 삭제 실패")
+                throw new Error(data.message || text.deletePostError)
             }
             trackEvent("post_deleted", postId)
             mutate()
         } catch (error) {
             console.error("Error deleting post:", error)
             setFetchError(
-                error instanceof Error
-                    ? error.message
-                    : "글 삭제 중 오류가 발생했습니다."
+                error instanceof Error ? error.message : text.deletePostError
             )
         } finally {
             setIsLoading(false)
@@ -204,16 +202,14 @@ export default function PostModal({
 
             if (!response.ok) {
                 const data = await response.json()
-                throw new Error(data.message || "좋아요 실패")
+                throw new Error(data.message || text.likePostError)
             }
             trackEvent("post_liked", postId)
             mutate()
         } catch (error) {
             console.error("Error liking post:", error)
             setFetchError(
-                error instanceof Error
-                    ? error.message
-                    : "글 좋아요 중 오류가 발생했습니다."
+                error instanceof Error ? error.message : text.likePostError
             )
         } finally {
             setIsLoading(false)
@@ -229,19 +225,17 @@ export default function PostModal({
 
             if (!response.ok) {
                 const data = await response.json()
-                toast.error(data.message || "마커 삭제 실패")
+                toast.error(data.message || text.deleteMarkerError)
             }
 
             trackEvent("marker_deleted", markerName)
             onClose()
             router.push("/")
-            toast.success("마커가 삭제되었습니다.")
+            toast.success(text.deleteMarkerSuccess)
         } catch (error) {
             console.error("Error deleting marker:", error)
             setFetchError(
-                error instanceof Error
-                    ? error.message
-                    : "마커 삭제 중 오류가 발생했습니다."
+                error instanceof Error ? error.message : text.deleteMarkerError
             )
         } finally {
             setIsLoading(false)
@@ -263,14 +257,14 @@ export default function PostModal({
                 )}
                 {isDeleteConfirmOpen ? (
                     <div className='space-y-4'>
-                        <p>이 마커를 삭제하시겠습니까?</p>
+                        <p>{text.deleteConfirm}</p>
                         <div className='flex justify-end space-x-2'>
                             <Button
                                 variant='outline'
                                 onClick={() => setIsDeleteConfirmOpen(false)}
                                 disabled={isLoading}
                             >
-                                취소
+                                {text.cancel}
                             </Button>
                             <Button
                                 variant='destructive'
@@ -280,7 +274,7 @@ export default function PostModal({
                                 }}
                                 disabled={isLoading}
                             >
-                                삭제
+                                {text.delete}
                             </Button>
                         </div>
                     </div>
@@ -298,7 +292,7 @@ export default function PostModal({
                                             }
                                             disabled={isLoading}
                                         >
-                                            삭제
+                                            {text.delete}
                                         </Button>
                                     )}
                                     <Button
@@ -307,13 +301,13 @@ export default function PostModal({
                                         }
                                         disabled={isLoading}
                                     >
-                                        글 작성
+                                        {text.writePost}
                                     </Button>
                                 </div>
                             )}
                             {isLoading && !posts.length ? (
                                 <div className='text-center text-gray-500'>
-                                    로딩중...
+                                    {text.loading}
                                 </div>
                             ) : posts.length > 0 ? (
                                 posts.map((post) => (
@@ -335,7 +329,9 @@ export default function PostModal({
                                                                 .value,
                                                         })
                                                     }
-                                                    placeholder='제목'
+                                                    placeholder={
+                                                        text.titlePlaceholder
+                                                    }
                                                 />
                                                 <Textarea
                                                     value={editPost.content}
@@ -346,7 +342,9 @@ export default function PostModal({
                                                                 e.target.value,
                                                         })
                                                     }
-                                                    placeholder='내용'
+                                                    placeholder={
+                                                        text.contentPlaceholder
+                                                    }
                                                     required
                                                 />
                                                 <Input
@@ -359,7 +357,9 @@ export default function PostModal({
                                                                 e.target.value,
                                                         })
                                                     }
-                                                    placeholder='비밀번호'
+                                                    placeholder={
+                                                        text.passwordPlaceholder
+                                                    }
                                                     required
                                                 />
                                                 <div className='flex justify-end space-x-2'>
@@ -371,13 +371,13 @@ export default function PostModal({
                                                         }
                                                         disabled={isLoading}
                                                     >
-                                                        취소
+                                                        {text.cancel}
                                                     </Button>
                                                     <Button
                                                         type='submit'
                                                         disabled={isLoading}
                                                     >
-                                                        저장
+                                                        {text.save}
                                                     </Button>
                                                 </div>
                                             </form>
@@ -404,7 +404,7 @@ export default function PostModal({
                                                         }
                                                         disabled={isLoading}
                                                     >
-                                                        좋아요
+                                                        {text.like}
                                                     </Button>
                                                     <Button
                                                         variant='outline'
@@ -419,14 +419,14 @@ export default function PostModal({
                                                         }
                                                         disabled={isLoading}
                                                     >
-                                                        수정
+                                                        {text.edit}
                                                     </Button>
                                                     <Button
                                                         variant='destructive'
                                                         onClick={() => {
                                                             const password =
                                                                 prompt(
-                                                                    "비밀번호를 입력하세요"
+                                                                    text.passwordPlaceholder
                                                                 )
                                                             if (password)
                                                                 handleDeletePost(
@@ -436,7 +436,7 @@ export default function PostModal({
                                                         }}
                                                         disabled={isLoading}
                                                     >
-                                                        삭제
+                                                        {text.delete}
                                                     </Button>
                                                 </div>
                                             </>
@@ -445,7 +445,7 @@ export default function PostModal({
                                 ))
                             ) : (
                                 <div className='text-center text-gray-500'>
-                                    글이 없습니다.
+                                    {text.noPosts}
                                 </div>
                             )}
                         </div>
@@ -464,7 +464,7 @@ export default function PostModal({
                                             title: e.target.value,
                                         })
                                     }
-                                    placeholder='제목'
+                                    placeholder={text.titlePlaceholder}
                                     disabled={isLoading}
                                 />
                                 <Textarea
@@ -475,7 +475,7 @@ export default function PostModal({
                                             content: e.target.value,
                                         })
                                     }
-                                    placeholder='내용'
+                                    placeholder={text.contentPlaceholder}
                                     required
                                     disabled={isLoading}
                                     className='min-h-[100px]'
@@ -489,7 +489,7 @@ export default function PostModal({
                                             password: e.target.value,
                                         })
                                     }
-                                    placeholder='비밀번호'
+                                    placeholder={text.passwordPlaceholder}
                                     required
                                     disabled={isLoading}
                                 />
@@ -502,10 +502,10 @@ export default function PostModal({
                                         }
                                         disabled={isLoading}
                                     >
-                                        취소
+                                        {text.cancel}
                                     </Button>
                                     <Button type='submit' disabled={isLoading}>
-                                        작성
+                                        {text.writePost}
                                     </Button>
                                 </div>
                             </form>
