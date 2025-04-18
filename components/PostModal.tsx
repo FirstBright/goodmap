@@ -439,7 +439,6 @@ export default function PostModal({
                                                         <Button
                                                             variant='destructive'
                                                             onClick={() => {
-                                                                const password =
                                                                     setPostToDelete(
                                                                         post.id
                                                                     )
