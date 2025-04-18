@@ -72,9 +72,9 @@ export default function PostModal({
     const [isLoading, setIsLoading] = useState(false)
     const [fetchError, setFetchError] = useState<string | null>(null)
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
-    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-    const [passwordInput, setPasswordInput] = useState("");
-    const [postToDelete, setPostToDelete] = useState<string | null>(null);
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
+    const [passwordInput, setPasswordInput] = useState("")
+    const [postToDelete, setPostToDelete] = useState<string | null>(null)
     const text = getLanguageText()
 
     // Use SWR for client-side data fetching
@@ -165,7 +165,9 @@ export default function PostModal({
             mutate()
         } catch (error) {
             console.error("Error editing post:", error)
-            toast.error(error instanceof Error ? error.message : text.editPostError)
+            toast.error(
+                error instanceof Error ? error.message : text.editPostError
+            )
         } finally {
             setIsLoading(false)
         }
@@ -247,21 +249,21 @@ export default function PostModal({
         }
     }
     const handlePasswordSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+        e.preventDefault()
         if (postToDelete && passwordInput) {
-            await handleDeletePost(postToDelete, passwordInput);
-            setIsPasswordModalOpen(false);
-            setPasswordInput("");
-            setPostToDelete(null);
+            await handleDeletePost(postToDelete, passwordInput)
+            setIsPasswordModalOpen(false)
+            setPasswordInput("")
+            setPostToDelete(null)
         }
-    };
+    }
 
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
                 <DialogContent
                     className='z-[1000] max-w-md sm:max-w-lg'
-                    aria-describedby='dialog-description'
+                    aria-describedby={undefined}
                 >
                     <DialogHeader>
                         <DialogTitle>{markerName}</DialogTitle>
@@ -276,7 +278,9 @@ export default function PostModal({
                             <div className='flex justify-end space-x-2'>
                                 <Button
                                     variant='outline'
-                                    onClick={() => setIsDeleteConfirmOpen(false)}
+                                    onClick={() =>
+                                        setIsDeleteConfirmOpen(false)
+                                    }
                                     disabled={isLoading}
                                 >
                                     {text.cancel}
@@ -354,7 +358,8 @@ export default function PostModal({
                                                             setEditPost({
                                                                 ...editPost,
                                                                 content:
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                             })
                                                         }
                                                         placeholder={
@@ -364,12 +369,15 @@ export default function PostModal({
                                                     />
                                                     <Input
                                                         type='password'
-                                                        value={editPost.password}
+                                                        value={
+                                                            editPost.password
+                                                        }
                                                         onChange={(e) =>
                                                             setEditPost({
                                                                 ...editPost,
                                                                 password:
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                             })
                                                         }
                                                         placeholder={
@@ -382,7 +390,9 @@ export default function PostModal({
                                                             type='button'
                                                             variant='outline'
                                                             onClick={() =>
-                                                                setEditPost(null)
+                                                                setEditPost(
+                                                                    null
+                                                                )
                                                             }
                                                             disabled={isLoading}
                                                         >
@@ -429,7 +439,8 @@ export default function PostModal({
                                                                     title: post.title,
                                                                     content:
                                                                         post.content,
-                                                                    password: "",
+                                                                    password:
+                                                                        "",
                                                                 })
                                                             }
                                                             disabled={isLoading}
@@ -439,9 +450,9 @@ export default function PostModal({
                                                         <Button
                                                             variant='destructive'
                                                             onClick={() => {
-                                                                    setPostToDelete(
-                                                                        post.id
-                                                                    )
+                                                                setPostToDelete(
+                                                                    post.id
+                                                                )
                                                                 setIsPasswordModalOpen(
                                                                     true
                                                                 )
@@ -516,7 +527,10 @@ export default function PostModal({
                                         >
                                             {text.cancel}
                                         </Button>
-                                        <Button type='submit' disabled={isLoading}>
+                                        <Button
+                                            type='submit'
+                                            disabled={isLoading}
+                                        >
                                             {text.writePost}
                                         </Button>
                                     </div>
@@ -528,41 +542,49 @@ export default function PostModal({
             </Dialog>
 
             {/* New Password Modal */}
-            <Dialog open={isPasswordModalOpen} onOpenChange={(open) => {
-                setIsPasswordModalOpen(open);
-                if (!open) {
-                    setPasswordInput("");
-                    setPostToDelete(null);
-                }
-            }}>
-                <DialogContent className="z-[1001] max-w-md">
+            <Dialog
+                open={isPasswordModalOpen}
+                onOpenChange={(open) => {
+                    setIsPasswordModalOpen(open)
+                    if (!open) {
+                        setPasswordInput("")
+                        setPostToDelete(null)
+                    }
+                }}
+            >
+                <DialogContent
+                    className='z-[1001] max-w-md'
+                    aria-describedby={undefined}
+                >
                     <DialogHeader>
                         <DialogTitle>{text.passwordPlaceholder}</DialogTitle>
-                        
                     </DialogHeader>
-                    <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                    <form onSubmit={handlePasswordSubmit} className='space-y-4'>
                         <Input
-                            type="password"
+                            type='password'
                             value={passwordInput}
                             onChange={(e) => setPasswordInput(e.target.value)}
                             placeholder={text.passwordPlaceholder}
                             required
                             disabled={isLoading}
                         />
-                        <div className="flex justify-end space-x-2">
+                        <div className='flex justify-end space-x-2'>
                             <Button
-                                type="button"
-                                variant="outline"
+                                type='button'
+                                variant='outline'
                                 onClick={() => {
-                                    setIsPasswordModalOpen(false);
-                                    setPasswordInput("");
-                                    setPostToDelete(null);
+                                    setIsPasswordModalOpen(false)
+                                    setPasswordInput("")
+                                    setPostToDelete(null)
                                 }}
                                 disabled={isLoading}
                             >
                                 {text.cancel}
                             </Button>
-                            <Button type="submit" disabled={isLoading || !passwordInput}>
+                            <Button
+                                type='submit'
+                                disabled={isLoading || !passwordInput}
+                            >
                                 {text.delete}
                             </Button>
                         </div>
