@@ -14,10 +14,10 @@ export default function Home() {
     return (
         <>
             <Head>
-                <title>GoodMap - 숨겨진 좋은 장소를 찾아보세요</title>
+                <title>GoodMap - Find and share good hidden places</title>
                 <meta
                     name='description'
-                    content='내 주변의 좋은 장소를 쉽게 찾는 익명 커뮤니티 지도'
+                    content='An anonymous community map that easily finds good places around me'
                 />
             </Head>
             <main className='h-screen'>
