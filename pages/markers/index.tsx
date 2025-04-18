@@ -1,6 +1,7 @@
 // pages/markers/index.tsx
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
+import Head from "next/head"
 
 interface Marker {
     id: string
@@ -12,20 +13,26 @@ interface Props {
     markers: Marker[]
 }
 
-export default function MarkersPage({ markers}: Props ) {
+export default function MarkersPage({ markers }: Props) {
     return (
-        <div>
-            <h1>All Markers</h1>
-            <ul>
-                {markers.map((marker) => (
-                    <li key={marker.id}>
-                        <Link href={`/markers/${marker.id}`}>
-                            {marker.name}
-                        </Link>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <>
+            <Head>
+                <title>Markers</title>
+                <meta name='robots' content='index, follow'></meta>
+            </Head>
+            <div>
+                <h1>All Markers</h1>
+                <ul>
+                    {markers.map((marker) => (
+                        <li key={marker.id}>
+                            <Link href={`/markers/${marker.id}`}>
+                                {marker.name}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </>
     )
 }
 

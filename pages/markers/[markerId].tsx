@@ -59,6 +59,10 @@ export default function MarkerPage({ marker, posts }: Props) {
             name: post.title,
             reviewBody: post.content,
             datePublished: post.createdAt,
+            author: {
+                "@type": "Person",
+                name: "Anonymous",
+            },
         })),
         url: `https://overcome0.be/markers/${marker.id}`,
     }
