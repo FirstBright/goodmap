@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/router"
 import { getLanguageText } from "@/utils/language"
+import { log } from "@/utils/logger";
 
 L.Icon.Default.prototype.options.iconUrl = ""
 L.Icon.Default.mergeOptions({
@@ -63,7 +64,7 @@ export default function MapComponent() {
                     typeof parsed.lng === "number" &&
                     typeof parsed.zoom === "number"
                 ) {
-                    console.log("Loaded map state from localStorage:", parsed)
+                    log("Loaded map state from localStorage:", parsed)
                     return parsed
                 }
             }
@@ -77,14 +78,14 @@ export default function MapComponent() {
         const fetchMarkers = async () => {
             try {
                 setIsLoading(true)
-                console.log("Fetching markers from /api/markers")
+                log("Fetching markers from /api/markers")
                 const response = await fetch("/api/markers", { method: "GET" })
-                console.log("GET /api/markers status:", response.status)
+                log("GET /api/markers status:", response.status)
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`)
                 }
                 const data = await response.json()
-                console.log("Fetched markers:", data)
+                log("Fetched markers:", data)
                 setMarkers(data)
                 setFilteredMarkers(data)
             } catch (err) {
@@ -100,7 +101,7 @@ export default function MapComponent() {
 
     useEffect(() => {
         if (mapRef.current) {
-            console.log("Map initialized:", mapRef.current.getCenter())
+            log("Map initialized:", mapRef.current.getCenter())
             mapRef.current.invalidateSize() // Fix map sizing issues
         }
     }, [])
@@ -117,7 +118,7 @@ export default function MapComponent() {
         const map = useMapEvents({
             click(e) {
                 const { lat, lng } = e.latlng
-                console.log("Map clicked at:", { lat, lng })
+                log("Map clicked at:", { lat, lng })
                 setSelectedPosition({ lat, lng })
                 setIsCreateModalOpen(true)
             },
@@ -125,10 +126,10 @@ export default function MapComponent() {
                 const center = map.getCenter()
                 const zoom = map.getZoom()
                 const newState = { lat: center.lat, lng: center.lng, zoom }
-                console.log("Map moved to:", newState)
+                log("Map moved to:", newState)
                 try {
                     localStorage.setItem("mapState", JSON.stringify(newState))
-                    console.log("Saved map state to localStorage:", newState)
+                    log("Saved map state to localStorage:", newState)
                 } catch (err) {
                     console.error("Error saving to localStorage:", err)
                 }
@@ -150,9 +151,9 @@ export default function MapComponent() {
 
     const handleMarkerCreated = async () => {
         try {
-            console.log("Refreshing markers from /api/markers")
+            log("Refreshing markers from /api/markers")
             const response = await fetch("/api/markers", { method: "GET" })
-            console.log("GET /api/markers status:", response.status)
+            log("GET /api/markers status:", response.status)
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`)
             }
@@ -229,7 +230,7 @@ export default function MapComponent() {
                                 position={[marker.latitude, marker.longitude]}
                                 eventHandlers={{
                                     click: () => {
-                                        console.log("Marker clicked:", marker)
+                                        log("Marker clicked:", marker)
                                         router.push(`/markers/${marker.id}`)
                                     },
                                 }}
@@ -242,7 +243,7 @@ export default function MapComponent() {
             <CreateMarkerModal
                 isOpen={isCreateModalOpen}
                 onClose={() => {
-                    console.log("Closing CreateMarkerModal")
+                    log("Closing CreateMarkerModal")
                     setIsCreateModalOpen(false)
                     setSelectedPosition(null)
                 }}

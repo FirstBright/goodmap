@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getLanguageText } from "@/utils/language"
+import { log } from "@/utils/logger";
 
 interface CreateMarkerModalProps {
   isOpen: boolean;
@@ -23,12 +24,12 @@ export default function CreateMarkerModal({
   const text = getLanguageText();
 
   useEffect(() => {
-    console.log("CreateMarkerModal isOpen:", isOpen);
+    log("CreateMarkerModal isOpen:", isOpen);
   }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted with name:", name);
+    log("Form submitted with name:", name);
     setIsLoading(true);
 
     try {
@@ -37,13 +38,13 @@ export default function CreateMarkerModal({
           latitude: position.lat,
           longitude: position.lng,
         };
-        console.log("Sending POST to /api/markers:", payload);
+        log("Sending POST to /api/markers:", payload);
         const response = await fetch("/api/markers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        console.log("POST /api/markers status:", response.status);
+        log("POST /api/markers status:", response.status);
   
         if (!response.ok) {
           const data = await response.json();
@@ -52,7 +53,7 @@ export default function CreateMarkerModal({
         }
   
         const data = await response.json();
-        console.log("Created marker:", data);
+        log("Created marker:", data);
         setName("");
         onMarkerCreated();
         onClose();
