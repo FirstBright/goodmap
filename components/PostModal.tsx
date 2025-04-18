@@ -160,7 +160,7 @@ export default function PostModal({
             mutate()
         } catch (error) {
             console.error("Error editing post:", error)
-            alert(error instanceof Error ? error.message : text.editPostError)
+            toast.error(error instanceof Error ? error.message : text.editPostError)
         } finally {
             setIsLoading(false)
         }
