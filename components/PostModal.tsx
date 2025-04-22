@@ -19,6 +19,7 @@ interface Post {
     title: string
     content: string
     createdAt: string
+    likes: number
 }
 
 interface PostModalProps {
@@ -411,7 +412,7 @@ export default function PostModal({
                                                     <h3 className='font-bold'>
                                                         {post.title}
                                                     </h3>
-                                                    <p className='break-words'>
+                                                    <p className='break-words whitespace-pre-wrap'>
                                                         {post.content}
                                                     </p>
                                                     <p className='text-sm text-gray-500'>
@@ -420,17 +421,22 @@ export default function PostModal({
                                                         ).toLocaleString()}
                                                     </p>
                                                     <div className='flex justify-end space-x-2 mt-2'>
-                                                        <Button
-                                                            variant='outline'
-                                                            onClick={() =>
-                                                                handleLikePost(
-                                                                    post.id
-                                                                )
-                                                            }
-                                                            disabled={isLoading}
-                                                        >
-                                                            {text.like}
-                                                        </Button>
+                                                        <div className='flex items-center space-x-1'>
+                                                            <span className='text-sm text-gray-600'>
+                                                                {post.likes} {post.likes === 1 ? 'Like' : 'Likes'}
+                                                            </span>
+                                                            <Button
+                                                                variant='outline'
+                                                                onClick={() =>
+                                                                    handleLikePost(
+                                                                        post.id
+                                                                    )
+                                                                }
+                                                                disabled={isLoading}
+                                                            >
+                                                                {text.like}
+                                                            </Button>
+                                                        </div>
                                                         <Button
                                                             variant='outline'
                                                             onClick={() =>

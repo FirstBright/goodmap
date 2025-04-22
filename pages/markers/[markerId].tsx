@@ -21,6 +21,7 @@ interface Post {
     title: string
     content: string
     createdAt: string
+    likes: number
 }
 
 interface Marker {
