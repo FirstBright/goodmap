@@ -1,4 +1,4 @@
-import { GetServerSideProps } from "next"
+import { GetStaticProps, GetStaticPaths } from "next";
 import { prisma } from "@/lib/prisma"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/router"
@@ -46,9 +46,10 @@ export default function MarkerPage({ marker, posts }: Props) {
     }
 
     const structuredData = {
-        "@context": "https://schema.org",
-        "@type": "Place",
-        name: marker.name,
+        "@context": "https://overcome0.be",
+        "@type": "WebPage",
+        name: `${marker.name} - GoodMap`,
+        description: `Explore posts and share experiences at ${marker.name} on GoodMap.`,
         geo: {
             "@type": "GeoCoordinates",
             latitude: marker.latitude,
@@ -119,45 +120,52 @@ export default function MarkerPage({ marker, posts }: Props) {
     )
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-    const { markerId } = context.params!
-
+export const getStaticProps: GetStaticProps = async ({ params }) => {
     try {
-        // Fetch marker
-        const marker = await prisma.marker.findUnique({
-            where: { id: markerId as string },
-        })
-
-        if (!marker) {
-            return { notFound: true }
-        }
-
-        // Fetch posts for the marker
-        const posts = await prisma.post.findMany({
-            where: { markerId: markerId as string },
-            orderBy: { createdAt: "desc" },
-        })
-
-        return {
-            props: {
-                marker: {
-                    id: marker.id,
-                    name: marker.name,
-                    latitude: marker.latitude,
-                    longitude: marker.longitude,
-                },
-                posts: posts.map((post) => ({
-                    id: post.id,
-                    title: post.title,
-                    content: post.content,
-                    createdAt: post.createdAt.toISOString(),
-                })),
-            },
-        }
+      const markerId = params!.markerId as string;
+      const marker = await prisma.marker.findUnique({
+        where: { id: markerId },
+      });
+  
+      if (!marker) {
+        return { notFound: true };
+      }
+  
+      const posts = await prisma.post.findMany({
+        where: { markerId },
+        orderBy: { createdAt: "desc" },
+        take: 10, // Limit to 10 posts to reduce load
+      });
+  
+      return {
+        props: {
+          marker: {
+            id: marker.id,
+            name: marker.name,
+            latitude: marker.latitude,
+            longitude: marker.longitude,
+          },
+          posts: posts.map((post) => ({
+            id: post.id,
+            title: post.title,
+            content: post.content,
+            createdAt: post.createdAt.toISOString(),
+            likes: post.likes,
+          })),
+        },
+        revalidate: 60, // Revalidate every 60 seconds
+      };
     } catch (error) {
-        console.error("Error fetching marker/posts:", error)
-        return { notFound: true }
+      console.error("Error fetching marker/posts:", error);
+      return { notFound: true };
     } finally {
-        await prisma.$disconnect()
+      await prisma.$disconnect();
     }
-}
+  };
+  
+  export const getStaticPaths: GetStaticPaths = async () => {
+    return {
+      paths: [], // Pre-render no paths at build time
+      fallback: "blocking", // Generate pages on-demand
+    };
+  };
