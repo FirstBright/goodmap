@@ -412,7 +412,7 @@ export default function PostModal({
                                                     <h3 className='font-bold'>
                                                         {post.title}
                                                     </h3>
-                                                    <p className='break-words whitespace-pre-wrap'>
+                                                    <p className='break-words whitespace-pre-wrap text-sm md:text-base leading-relaxed'>
                                                         {post.content}
                                                     </p>
                                                     <p className='text-sm text-gray-500'>
