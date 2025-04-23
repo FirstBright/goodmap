@@ -22,6 +22,7 @@ model Marker {
   longitude Float
   createdAt DateTime @default(now())
   posts     Post[]
+  @@index([id])
 }
 
 model Post {
@@ -33,4 +34,6 @@ model Post {
   createdAt DateTime @default(now())
   likes     Int      @default(0)
   marker    Marker   @relation(fields: [markerId], references: [id])
+  @@index([markerId])
+  @@index([createdAt]) 
 }

@@ -12,7 +12,7 @@ export default async function handler(
         try {
             const posts = await prisma.post.findMany({
                 where: { markerId: id as string },
-                orderBy: { likes: "desc" },
+                orderBy: { createdAt: "desc" },
             })
             res.setHeader(
                 "Cache-Control",
