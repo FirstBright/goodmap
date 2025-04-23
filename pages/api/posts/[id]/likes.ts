@@ -1,22 +1,23 @@
 import { prisma } from "@/lib/prisma"
 import { NextApiResponse, NextApiRequest } from "next"
+import { getRedis } from "@/lib/redis";
 
-
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const { id } = req.query
-    if (!id || Array.isArray(id)) {
-        return res.status(400).json({ message: "Invalid ID" })
-    }
-
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "POST") {
+      try {
         const post = await prisma.post.update({
-            where: { id },
-            data: { likes: { increment: 1 } },
-        })
-        return res.status(200).json(post)
+          where: { id: req.query.id as string },
+          data: { likes: { increment: 1 } },
+          include: { marker: { select: { id: true } } }, // Get markerId
+        });
+        const redis = await getRedis();
+        const cacheKey = `posts:${post.marker.id}`;
+        await redis.del(cacheKey); // Invalidate cache
+        return res.status(200).json(post);
+      } catch (error) {
+        console.error("Error updating likes:", error);
+        return res.status(500).json({ message: "Failed to update likes" });
+      }
     }
-    res.status(405).json({ message: "Method not allowed" })
-}
+    res.status(405).json({ message: "Method not allowed" });
+  }

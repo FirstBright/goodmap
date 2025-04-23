@@ -1,23 +1,25 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { getRedis } from "@/lib/redis";
 
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    const { id } = req.query
+    const redis = await getRedis();
+  const markerId = req.query.id as string;
+  const cacheKey = `posts:${markerId}`;
 
     if (req.method === "GET") {
         try {
+            const cached = await redis.get(cacheKey);
+            if (cached) return res.status(200).json(JSON.parse(cached));
             const posts = await prisma.post.findMany({
-                where: { markerId: id as string },
+                where: { markerId },
                 orderBy: { createdAt: "desc" },
             })
-            res.setHeader(
-                "Cache-Control",
-                "s-maxage=60, stale-while-revalidate"
-            )
+            await redis.setEx(cacheKey, 60, JSON.stringify(posts));
             res.status(200).json(posts)
         } catch (error) {
             console.error("Error fetching posts:", error)
@@ -32,9 +34,10 @@ export default async function handler(
                     title,
                     content,
                     password: hashedPassword,
-                    markerId: id as string,
+                    markerId,
                 },
             })
+            await redis.del(cacheKey);
             res.status(201).json(post)
         } catch (error) {
             console.error("Error creating post:", error)
