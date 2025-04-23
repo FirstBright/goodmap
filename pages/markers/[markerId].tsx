@@ -1,6 +1,5 @@
-// pages/markers/[markerId].tsx
 import { GetServerSideProps } from "next"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/router"
 import { useState } from "react"
@@ -122,7 +121,6 @@ export default function MarkerPage({ marker, posts }: Props) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const { markerId } = context.params!
-    const prisma = new PrismaClient()
 
     try {
         // Fetch marker
