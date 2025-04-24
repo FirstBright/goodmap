@@ -114,7 +114,6 @@ export default function PostModal({
         e.preventDefault()
         setIsLoading(true)
         setFetchError(null)
-
         try {
             const response = await fetch(`/api/markers/${markerId}/posts`, {
                 method: "POST",
@@ -127,9 +126,13 @@ export default function PostModal({
                 throw new Error(data.message || text.createPostError)
             }
             trackEvent("post_created", markerName)
+            const newPostData = await response.json()
             setNewPost({ title: "", content: "", password: "" })
             setIsCreateFormOpen(false)
-            mutate() // Revalidate SWR cache
+            mutate(
+                (currentPosts: Post[] = []) => [...currentPosts, newPostData],
+                { revalidate: false }
+            )
         } catch (error) {
             console.error("Error creating post:", error)
             setFetchError(
@@ -143,7 +146,6 @@ export default function PostModal({
     const handleEditPost = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!editPost) return
-
         setIsLoading(true)
         setFetchError(null)
         try {
@@ -156,14 +158,18 @@ export default function PostModal({
                     password: editPost.password,
                 }),
             })
-
             if (!response.ok) {
                 const data = await response.json()
                 throw new Error(data.message || text.editPostError)
             }
             trackEvent("post_edited", editPost.title)
+            const updatedPost = await response.json()
             setEditPost(null)
-            mutate()
+            mutate(
+                (currentPosts: Post[] = []) =>
+                    currentPosts.map((p) => (p.id === updatedPost.id ? updatedPost : p)),
+                { revalidate: false }
+            )
         } catch (error) {
             console.error("Error editing post:", error)
             toast.error(
@@ -189,7 +195,10 @@ export default function PostModal({
                 throw new Error(data.message || text.deletePostError)
             }
             trackEvent("post_deleted", postId)
-            mutate()
+            mutate(
+                (currentPosts: Post[] = []) => currentPosts.filter((p) => p.id !== postId),
+                { revalidate: false }
+            )
         } catch (error) {
             console.error("Error deleting post:", error)
             setFetchError(
@@ -204,6 +213,11 @@ export default function PostModal({
         setIsLoading(true)
         setFetchError(null)
         try {
+            setPosts((prevPosts) =>
+                prevPosts.map((post) =>
+                    post.id === postId ? { ...post, likes: post.likes + 1 } : post
+                )
+            )
             const response = await fetch(`/api/posts/${postId}/likes`, {
                 method: "POST",
             })
@@ -213,9 +227,20 @@ export default function PostModal({
                 throw new Error(data.message || text.likePostError)
             }
             trackEvent("post_liked", postId)
-            mutate()
+            const updatedPost = await response.json()
+            // Update SWR cache with updated post
+            mutate(
+                (currentPosts: Post[] = []) =>
+                    currentPosts.map((p) => (p.id === updatedPost.id ? updatedPost : p)),
+                { revalidate: false }
+            )
         } catch (error) {
             console.error("Error liking post:", error)
+            setPosts((prevPosts) =>
+                prevPosts.map((post) =>
+                    post.id === postId ? { ...post, likes: post.likes - 1 } : post
+                )
+            )
             setFetchError(
                 error instanceof Error ? error.message : text.likePostError
             )

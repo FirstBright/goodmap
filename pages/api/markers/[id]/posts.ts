@@ -8,8 +8,8 @@ export default async function handler(
     res: NextApiResponse
 ) {
     const redis = await getRedis();
-  const markerId = req.query.id as string;
-  const cacheKey = `posts:${markerId}`;
+    const markerId = req.query.id as string;
+    const cacheKey = `posts:${markerId}`;
 
     if (req.method === "GET") {
         try {
@@ -28,6 +28,7 @@ export default async function handler(
     } else if (req.method === "POST") {
         const { title, content, password } = req.body
         const hashedPassword = await bcrypt.hash(password, 10)
+        console.time(`create-post-${markerId}`);
         try {
             const post = await prisma.post.create({
                 data: {
@@ -38,6 +39,7 @@ export default async function handler(
                 },
             })
             await redis.del(cacheKey);
+            console.timeEnd(`like-${req.query.id}`);
             res.status(201).json(post)
         } catch (error) {
             console.error("Error creating post:", error)
