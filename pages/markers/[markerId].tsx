@@ -99,6 +99,7 @@ export default function MarkerPage({ marker, posts }: Props) {
                     content={`https://overcome0.be/markers/${marker.id}`}
                 />
                 <meta property='og:site_name' content='GoodMap' />
+                <meta property="og:image" content="https://overcome0.be/goodmap.webp" />
                 <script
                     type='application/ld+json'
                     dangerouslySetInnerHTML={{

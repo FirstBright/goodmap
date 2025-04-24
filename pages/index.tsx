@@ -19,6 +19,7 @@ export default function Home() {
                     name='description'
                     content='An anonymous community map that easily finds good places around me'
                 />
+                <meta property="og:image" content="https://overcome0.be/og/goodmap.webp" />
             </Head>
             <main className='h-screen'>
                 <MapComponent />
