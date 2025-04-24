@@ -45,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     } else if (req.method === "PATCH") {
         try {
-            const { title, content, password } = req.body;
+            const { title, content} = req.body;
             const post = await prisma.post.findUnique({
                 where: { id: String(id) },
                 include: { marker: { select: { id: true } } },
