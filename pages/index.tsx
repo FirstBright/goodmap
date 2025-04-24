@@ -40,21 +40,18 @@ export default function Home() {
                 <meta property="twitter:description" content="An anonymous community map that easily finds good places around me" />
                 <meta property="twitter:image" content="https://overcome0.be/og/goodmap.webp" />
             </Head>
-            <main className="min-h-screen flex flex-col">
-                <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                        <MapComponent />
-                    </div>
-                    <div className="md:w-[160px] flex justify-center items-start">
-                        <AdFitBanner
-                            mobileAdUnit="DAN-WCxQYYTxuTSxEFAF"
-                            pcAdUnit="DAN-h3lEt6y18Q5XJYRN"
-                            enabled={process.env.NEXT_PUBLIC_ADFIT_ENABLED === "true"}
-                            className="md:sticky md:top-4"
-                        />
-                    </div>
-                    <GoogleAdSense clientId = 'ca-pub-9025940068718161' />
+            <main className="h-screen bg-gray-100 relative">
+                <MapComponent />
+                <div className="absolute top-[25%] right-4 z-0">
+                    <AdFitBanner
+                        mobileAdUnit="DAN-WCxQYYTxuTSxEFAF"
+                        pcAdUnit="DAN-h3lEt6y18Q5XJYRN"
+                        enabled={process.env.NEXT_PUBLIC_ADFIT_ENABLED === "true"}
+                        className="hidden md:block"
+                    />
                 </div>
+                <GoogleAdSense clientId='ca-pub-9025940068718161' />
+
             </main>
         </>
     )

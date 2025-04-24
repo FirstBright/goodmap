@@ -2,7 +2,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 0;
   }
   
   .mobile {
@@ -20,7 +20,7 @@
     width: 160px;
     height: 600px;
     position: sticky;
-    top: 25rem; /* 헤더나 네비게이션 높이에 맞춰서 */
+    top: 250rem; /* 헤더나 네비게이션 높이에 맞춰서 */
   }
   
   @media (max-width: 768px) {
