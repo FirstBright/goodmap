@@ -2,6 +2,7 @@ import dynamic from "next/dynamic"
 import Head from "next/head"
 
 
+
 const MapComponent = dynamic(() => import("@/components/MapComponent"), {
     ssr: false,
     loading: () => (
@@ -12,7 +13,10 @@ const MapComponent = dynamic(() => import("@/components/MapComponent"), {
 })
 const AdFitBanner = dynamic(() => import("@/components/AdFitBanner"), {
     ssr: false,
-  });
+});
+const GoogleAdSense = dynamic(() => import("@/components/GoogleAdSense"), {
+    ssr: false,
+});
 
 export default function Home() {
     return (
@@ -49,6 +53,7 @@ export default function Home() {
                             className="md:sticky md:top-4"
                         />
                     </div>
+                    <GoogleAdSense clientId = 'ca-pub-9025940068718161' />
                 </div>
             </main>
         </>
