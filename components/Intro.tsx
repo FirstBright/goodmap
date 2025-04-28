@@ -1,16 +1,19 @@
 import { motion } from "framer-motion";
+import { getLanguageText } from "@/utils/language";
+
+interface Continent {
+    name: string
+    lat: number
+    lng: number
+    latRange: number
+    lngRange: number
+}
 
 export default function Intro({ onContinentSelect }: { onContinentSelect: (lat: number, lng: number) => void }) {
 
-    interface Continent {
-        name: string
-        lat: number
-        lng: number
-        latRange: number
-        lngRange: number
-    }
+    const text = getLanguageText();
 
-    const continents = [
+    const continents: Continent[] = [
         { name: "North America", lat: 40, lng: -100, latRange: 15, lngRange: 20 },
         { name: "South America", lat: -15, lng: -60, latRange: 10, lngRange: 10 },
         { name: "Europe", lat: 50, lng: 10, latRange: 10, lngRange: 20 },
@@ -25,8 +28,29 @@ export default function Intro({ onContinentSelect }: { onContinentSelect: (lat: 
         onContinentSelect(lat, lng)
     }
 
+    const tutorialSteps = [
+        {
+            title: text.searchPlaceholder, // "장소 이름으로 검색..." 또는 "Search by place name..."
+            description: text.searchPlaceholder === "장소 이름으로 검색..."
+                ? "원하는 장소를 검색하여 커뮤니티가 공유한 숨겨진 명소를 찾아보세요!"
+                : "Search for places to discover hidden gems shared by the community!",
+        },
+        {
+            title: text.writePost, // "글 작성" 또는 "Write Post"
+            description: text.writePost === "글 작성"
+                ? "지도 위에서 클릭하여 나만의 장소를 추가하고 이야기를 공유하세요."
+                : "Click on the map to add your own place and share your story.",
+        },
+        {
+            title: text.like, // "좋아요" 또는 "Like"
+            description: text.like === "좋아요"
+                ? "마음에 드는 장소에 좋아요를 눌러 커뮤니티와 함께 즐기세요!"
+                : "Like your favorite places to engage with the community!",
+        },
+    ];
+
     return (
-        <div className="flex flex-col justify-center items-center ">
+        <div className="flex flex-col justify-center items-center h-screen">
 
             <motion.div
                 initial={{ opacity: 0 }}
@@ -37,20 +61,43 @@ export default function Intro({ onContinentSelect }: { onContinentSelect: (lat: 
             >
                 <motion.h1
                     initial={{ y: -50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
-                    className="text-4xl font-bold text-white mb-6"
+                    animate={{ y: 0, opacity: 1, scale: [1, 1.05, 1] }}
+                    transition={{ delay: 0.2, duration: 0.5, scale: { duration: 1.5, repeat: Infinity } }}
+                    className="text-4xl font-bold text-white mb-10"
                 >
-                    Welcome to GoodMap!
+                    {text.searchPlaceholder === "장소 이름으로 검색..."
+                        ? "GoodMap에 오신 것을 환영합니다!"
+                        : "Welcome to GoodMap!"}
                 </motion.h1>
                 <motion.p
                     initial={{ y: -50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.4, duration: 0.5 }}
-                    className="text-lg text-white mb-8"
+                    className="text-lg text-white mb-4 text-center max-w-2xl"
                 >
-                    Find hidden places around the world. Select a continent to start!
+                    {text.searchPlaceholder === "장소 이름으로 검색..."
+                        ? "GoodMap은 누구나 자유롭게 숨겨진 장소를 공유하고 탐험할 수 있는 커뮤니티 지도입니다! 대륙을 선택하여 지금 시작하세요."
+                        : "GoodMap is a community map where anyone can freely share and explore hidden places! Select a continent to get started."}
                 </motion.p>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6, duration: 0.5 }}
+                    className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl"
+                >
+                    {tutorialSteps.map((step, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.8 + index * 0.2, duration: 0.5 }}
+                            className="bg-white bg-opacity-20 backdrop-blur-md p-4 rounded-lg text-center"
+                        >
+                            <h3 className="font-semibold mb-3">{step.title}</h3>
+                            <p className="text-sm">{step.description}</p>
+                        </motion.div>
+                    ))}
+                </motion.div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl">
                     {continents.map((continent, index) => (
                         <motion.button
