@@ -50,7 +50,7 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({
   
     adRef.current.appendChild(ins);
     adRef.current.appendChild(script);
-  }, [enabled, isMobile]);
+  }, [enabled, isMobile, mobileAdUnit, pcAdUnit]);
 
   if (!enabled) return null;
 
