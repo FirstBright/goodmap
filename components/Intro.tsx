@@ -91,7 +91,7 @@ export default function Intro({ onContinentSelect }: { onContinentSelect: (lat: 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.8 + index * 0.2, duration: 0.5 }}
-                            className="bg-white bg-opacity-20 backdrop-blur-md p-4 rounded-lg text-center"
+                            className="bg-white bg-opacity-20 backdrop-blur-md p-4 rounded-lg text-center text-gray-800 bg-opacity-50 rounded-lg shadow-md"
                         >
                             <h3 className="font-semibold mb-3">{step.title}</h3>
                             <p className="text-sm">{step.description}</p>
@@ -108,7 +108,7 @@ export default function Intro({ onContinentSelect }: { onContinentSelect: (lat: 
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => selectContinent(continent)}
-                            className="px-6 py-3 bg-white text-black rounded-lg shadow-md hover:bg-gray-200"
+                            className="px-6 py-3 bg-white text-gray-800 rounded-lg shadow-md hover:bg-gray-200"
                         >
                             {continent.name}
                         </motion.button>
