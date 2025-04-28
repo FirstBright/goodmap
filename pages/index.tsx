@@ -24,11 +24,27 @@ export default function Home() {
     const [showIntro, setShowIntro] = useState(false)
 
     useEffect(() => {
-        const mapState = localStorage.getItem("mapState")
-        if (mapState) {
-            setIsReady(true)
+        let isValidMapState = false;
+        try {
+            const mapState = localStorage.getItem("mapState");
+            if (mapState) {
+                const parsed = JSON.parse(mapState);
+                if (
+                    typeof parsed.lat === "number" &&
+                    typeof parsed.lng === "number" &&
+                    typeof parsed.zoom === "number"
+                ) {
+                    isValidMapState = true;
+                }
+            }
+        } catch (err) {
+            console.error("Error validating mapState:", err);
+        }
+    
+        if (isValidMapState) {
+            setIsReady(true);
         } else {
-            setShowIntro(true)
+            setShowIntro(true);
         }
     }, [])
 
