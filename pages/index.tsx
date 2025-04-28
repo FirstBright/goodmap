@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic"
 import Head from "next/head"
+import { useState, useEffect } from "react"
 
 const MapComponent = dynamic(() => import("@/components/MapComponent"), {
     ssr: false,
@@ -16,7 +17,30 @@ const GoogleAdSense = dynamic(() => import("@/components/GoogleAdSense"), {
     ssr: false,
 })
 
+const Intro = dynamic(() => import("@/components/Intro"), { ssr: false })
+
 export default function Home() {
+    const [isReady, setIsReady] = useState(false)
+    const [showIntro, setShowIntro] = useState(false)
+
+    useEffect(() => {
+        const mapState = localStorage.getItem("mapState")
+        if (mapState) {
+            setIsReady(true)
+        } else {
+            setShowIntro(true)
+        }
+    }, [])
+
+    const handleContinentSelected = (lat: number, lng: number) => {
+        localStorage.setItem(
+            "mapState",
+            JSON.stringify({ lat, lng, zoom: 7 })
+        )
+        setShowIntro(false)
+        setIsReady(true)
+    }
+
     return (
         <>
             <Head>
@@ -57,18 +81,21 @@ export default function Home() {
                 />
             </Head>
             <main className='h-screen bg-gray-100 relative'>
-                <MapComponent />
-                <div className='absolute top-[25%] right-4 z-0'>
-                    <AdFitBanner
-                        mobileAdUnit='DAN-WCxQYYTxuTSxEFAF'
-                        pcAdUnit='DAN-h3lEt6y18Q5XJYRN'
-                        enabled={
-                            process.env.NEXT_PUBLIC_ADFIT_ENABLED === "true"
-                        }
-                        className='hidden md:block'
-                    />
-                </div>
-                <GoogleAdSense clientId='ca-pub-9025940068718161' />
+                {showIntro && <Intro onContinentSelect={handleContinentSelected} />}
+                {isReady && (
+                    <>
+                        <MapComponent />
+                        <div className="absolute top-[25%] right-4 z-0">
+                            <AdFitBanner
+                                mobileAdUnit="DAN-WCxQYYTxuTSxEFAF"
+                                pcAdUnit="DAN-h3lEt6y18Q5XJYRN"
+                                enabled={process.env.NEXT_PUBLIC_ADFIT_ENABLED === "true"}
+                                className="hidden md:block"
+                            />
+                        </div>
+                        <GoogleAdSense clientId="ca-pub-9025940068718161" />
+                    </>
+                )}
             </main>
         </>
     )
