@@ -52,14 +52,16 @@ export default function Intro({ onContinentSelect }: { onContinentSelect: (lat: 
                     Find hidden places around the world. Select a continent to start!
                 </motion.p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl">
-                    {continents.map((continent) => (
+                    {continents.map((continent, index) => (
                         <motion.button
                             key={continent.name}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 + index * 0.1, duration: 0.5 }}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => selectContinent(continent)}
                             className="px-6 py-3 bg-white text-black rounded-lg shadow-md hover:bg-gray-200"
-
                         >
                             {continent.name}
                         </motion.button>
