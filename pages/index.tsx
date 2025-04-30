@@ -17,7 +17,7 @@ const GoogleAdSense = dynamic(() => import("@/components/GoogleAdSense"), {
     ssr: false,
 })
 
-const Intro = dynamic(() => import("@/components/Intro"), { ssr: false })
+const Intro = dynamic(() => import("@/components/Intro"), { ssr: true })
 
 export default function Home() {
     const [isReady, setIsReady] = useState(false)

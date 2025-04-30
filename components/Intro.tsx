@@ -52,69 +52,45 @@ export default function Intro({ onContinentSelect }: { onContinentSelect: (lat: 
     return (
         <div className="flex flex-col justify-center items-center min-h-screen ">
 
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="w-full max-w-[1080px] flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-300 to-purple-400"
-            >
-                <motion.h1
-                    initial={{ y: -50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1, scale: [1, 1.05, 1] }}
-                    transition={{ delay: 0.2, duration: 0.5, scale: { duration: 1.5, repeat: Infinity } }}
-                    className="text-2xl sm:text-5xl font-bold text-white mb-6 sm:mb-10 will-change-transform"
-                >
+            <div className="w-full max-w-[1080px] flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-300 to-purple-400 px-4">
+                <h1 className="text-2xl sm:text-5xl font-bold text-white mb-6 sm:mb-10 will-change-transform">
                     {text.searchPlaceholder === "장소 이름으로 검색..."
                         ? "GoodMap에 오신 것을 환영합니다!"
                         : "Welcome to GoodMap!"}
-                </motion.h1>
-                <motion.p
-                    initial={{ y: -50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    className="text-base sm:text-lg text-white mb-4 text-center max-w-2xl"
-                >
+                </h1>
+                <p className="text-base sm:text-lg text-white mb-4 text-center max-w-2xl">
                     {text.searchPlaceholder === "장소 이름으로 검색..."
                         ? "GoodMap은 누구나 자유롭게 숨겨진 장소를 공유하고 탐험할 수 있는 커뮤니티 지도입니다! 대륙을 선택하여 지금 시작하세요."
                         : "GoodMap is a community map where anyone can freely share and explore hidden places! Select a continent to get started."}
-                </motion.p>
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6, duration: 0.5 }}
-                    className="hidden sm:grid mb-8 grid-cols-3 gap-4 max-w-4xl w-full"
-                >
+                </p>
+                <div className="hidden sm:grid mb-8 grid-cols-3 gap-4 max-w-4xl w-full">
                     {tutorialSteps.map((step, index) => (
-                        <motion.div
+                        <div
                             key={index}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.8 + index * 0.2, duration: 0.5 }}
                             className="bg-white bg-opacity-20 backdrop-blur-md p-4 rounded-lg text-center text-gray-800 bg-opacity-50 rounded-lg shadow-md"
                         >
                             <h3 className="font-semibold mb-3">{step.title}</h3>
                             <p className="text-sm">{step.description}</p>
-                        </motion.div>
+                        </div>
                     ))}
-                </motion.div>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl">
                     {continents.map((continent, index) => (
-                        <motion.button
+                        <motion.div
                             key={continent.name}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.6 + index * 0.1, duration: 0.5 }}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
+                            className="px-6 py-3 bg-white text-gray-800 rounded-lg shadow-md hover:bg-gray-200 text-center"
                             onClick={() => selectContinent(continent)}
-                            className="px-6 py-3 bg-white text-gray-800 rounded-lg shadow-md hover:bg-gray-200"
                         >
                             {continent.name}
-                        </motion.button>
+                        </motion.div>
                     ))}
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 }
