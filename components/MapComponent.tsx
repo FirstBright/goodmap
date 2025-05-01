@@ -191,7 +191,7 @@ export default function MapComponent() {
     return (
         <div className='min-h-screen flex flex-col justify-center items-center bg-gray-100 '>
             {/* 검색창 */}
-            <div className='w-full max-w-[1080px] px-4 py-4 flex justify-center items-center gap-2 bg-white shadow-md z-[1000] sm:px-6'>
+            <div className='w-full max-w-[1080px] px-4 py-4 flex justify-center items-center gap-2 bg-gray-100 shadow-md z-[1000] sm:px-6'>
                 <div className='flex items-center gap-2 w-full sm:w-auto'>
                     <Input
                         type='text'
