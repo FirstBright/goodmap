@@ -67,7 +67,7 @@ export default function Intro({ onContinentSelect }: { onContinentSelect: (lat: 
                     {tutorialSteps.map((step, index) => (
                         <div
                             key={index}
-                            className="bg-white bg-opacity-20 backdrop-blur-md p-4 rounded-lg text-center text-gray-800 bg-opacity-50 rounded-lg shadow-md"
+                            className="bg-white bg-opacity-20 backdrop-blur-md p-4 rounded-lg text-center text-gray-800 bg-opacity-50 shadow-md"
                         >
                             <h3 className="font-semibold mb-3">{step.title}</h3>
                             <p className="text-sm">{step.description}</p>
