@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar"
 import dynamic from "next/dynamic"
 import Head from "next/head"
 import { useState, useEffect } from "react"
@@ -96,6 +97,7 @@ export default function Home() {
                     content='https://overcome0.be/goodmap.webp'
                 />
             </Head>
+            <Navbar />
             <main className='h-screen bg-gray-100 relative'>
                 {showIntro && <Intro onContinentSelect={handleContinentSelected} />}
                 {isReady && (
