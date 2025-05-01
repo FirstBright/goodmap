@@ -15,7 +15,7 @@ const AdFitBanner = dynamic(() => import("@/components/AdFitBanner"), {
     ssr: false,
 })
 const GoogleAdSense = dynamic(() => import("@/components/GoogleAdSense"), {
-    ssr: false,
+    ssr: true,
 })
 
 const Intro = dynamic(() => import("@/components/Intro"), { ssr: true })
@@ -95,6 +95,23 @@ export default function Home() {
                 <meta
                     property='twitter:image'
                     content='https://overcome0.be/goodmap.webp'
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify({
+                            "@context": "https://schema.org",
+                            "@type": "WebSite",
+                            "name": "GoodMap",
+                            "url": "https://overcome0.be/",
+                            "description": "An anonymous community map to discover and share hidden gems around the world.",
+                            "potentialAction": {
+                                "@type": "SearchAction",
+                                "target": "https://overcome0.be/?q={search_term_string}",
+                                "query-input": "required name=search_term_string",
+                            },
+                        }),
+                    }}
                 />
             </Head>
             <Navbar />
