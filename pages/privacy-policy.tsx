@@ -9,8 +9,8 @@ export default function PrivacyPolicy() {
                 <meta name="description" content="Read GoodMap's privacy policy to understand how we handle your data." />
             </Head>
             <Navbar />
-            <main className="min-h-screen bg-gray-100 py-8 pt-16">
-                <section className="w-full max-w-[1080px] mx-auto px-4">
+            <main className="min-h-screen bg-gray-100 py-8 pt-16 ">
+                <section className="w-full max-w-[1080px] mx-auto px-4 text-gray-800">
                     <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
                     <p className="mb-4">
                         At GoodMap, we value your privacy. This policy outlines how we collect, use, and protect your personal information.
