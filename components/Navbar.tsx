@@ -54,9 +54,9 @@ export default function Navbar() {
 
     return (
 
-        <nav className="bg-gray-100 py-2  fixed w-full top-0 z-[1001] ">
+        <nav className="bg-gray-100 py-1  fixed w-full top-0 z-[1001] ">
             <div className="w-full max-w-[1080px] mx-auto px-4 flex justify-between ">
-                <Link href="/" className="text-xl font-bold text-gray-900">
+                <Link href="/" className="text-xl font-bold text-gray-900 pt-1">
                     GoodMap
                 </Link>
                 <button
