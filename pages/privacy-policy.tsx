@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar";
 import Head from "next/head";
 
 export default function PrivacyPolicy() {
@@ -7,7 +8,8 @@ export default function PrivacyPolicy() {
                 <title>Privacy Policy - GoodMap</title>
                 <meta name="description" content="Read GoodMap's privacy policy to understand how we handle your data." />
             </Head>
-            <main className="min-h-screen bg-gray-100 py-8">
+            <Navbar />
+            <main className="min-h-screen bg-gray-100 py-8 pt-16">
                 <section className="w-full max-w-[1080px] mx-auto px-4">
                     <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
                     <p className="mb-4">

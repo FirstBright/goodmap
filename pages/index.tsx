@@ -14,10 +14,6 @@ const MapComponent = dynamic(() => import("@/components/MapComponent"), {
 const AdFitBanner = dynamic(() => import("@/components/AdFitBanner"), {
     ssr: false,
 })
-const GoogleAdSense = dynamic(() => import("@/components/GoogleAdSense"), {
-    ssr: true,
-})
-
 const Intro = dynamic(() => import("@/components/Intro"), { ssr: true })
 
 export default function Home() {
@@ -128,7 +124,6 @@ export default function Home() {
                                 className="hidden md:block"
                             />
                         </div>
-                        <GoogleAdSense clientId="ca-pub-9025940068718161" />
                     </>
                 )}
             </main>

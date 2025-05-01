@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar";
 import Head from "next/head";
 
 export default function About() {
@@ -6,8 +7,10 @@ export default function About() {
             <Head>
                 <title>About GoodMap</title>
                 <meta name="description" content="Learn about GoodMap, a community-driven platform for sharing hidden gems." />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
             </Head>
-            <main className="min-h-screen bg-gray-100 py-8">
+            <Navbar />
+            <main className="min-h-screen bg-gray-100 py-8 pt-16">
                 <section className="w-full max-w-[1080px] mx-auto px-4">
                     <h1 className="text-3xl font-bold mb-4">About GoodMap</h1>
                     <p className="mb-4">
