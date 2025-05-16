@@ -16,19 +16,6 @@ export default function App({
             <Head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
                 <meta name="google-adsense-account" content="ca-pub-9025940068718161" />
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html: `
-                            (function() {
-                                var script = document.createElement('script');
-                                script.async = true;
-                                script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9025940068718161';
-                                script.crossOrigin = 'anonymous';
-                                document.head.appendChild(script);
-                            })();
-                        `,
-                    }}
-                />
             </Head>
             <SessionProvider session={session}>
                 <GoogleAnalytics
