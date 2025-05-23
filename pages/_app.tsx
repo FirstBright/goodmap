@@ -11,16 +11,17 @@ export default function App({
     Component,
     pageProps: { session, ...pageProps },
 }: AppProps) {
+    const isProd = process.env.NODE_ENV === "production";
     return (
         <>
             <Head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-                <meta name="google-adsense-account" content="ca-pub-9025940068718161" />
             </Head>
             <SessionProvider session={session}>
+                {isProd && (
                 <GoogleAnalytics
                     gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS || ""}
-                />
+                />)}
                 <Component {...pageProps} />
             </SessionProvider>
             <ToastContainer />
