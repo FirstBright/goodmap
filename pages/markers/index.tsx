@@ -102,7 +102,7 @@ export default function MarkersPage({ markers }: Props) {
                         </div>
                     </nav>
                 </header>
-                <main className="max-w-6xl mx-auto p-4">
+                <main className="max-w-6xl mx-auto p-4 text-gray-800">
                     <h1 className="text-3xl font-bold mb-4">모든 목록</h1>
                     <p className="mb-6">
                         GoodMap에서 주변 사람들이 공유한 좋은 장소들을 찾아보세요. 아래에서 각
