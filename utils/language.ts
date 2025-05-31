@@ -38,6 +38,7 @@ export const getLanguageText = () => {
             welcomeDescription:
                 "GoodMap은 누구나 자유롭게 숨겨진 장소를 공유하고 탐험할 수 있는 커뮤니티 지도입니다! 대륙을 선택하여 지금 시작하세요.",
             watchTutorial: "튜토리얼 동영상 보기",
+            alreadyLiked: "이미 좋아요를 눌렀습니다.",
         }
         : {
             // English text
@@ -76,5 +77,6 @@ export const getLanguageText = () => {
             welcomeDescription:
                 "GoodMap is a community map where anyone can freely share and explore hidden places! Select a continent to get started.",
             watchTutorial: "Watch Tutorial Video",
+            alreadyLiked: "You have already liked this post.",
         }
 }

@@ -76,6 +76,7 @@ export default function PostModal({
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
     const [passwordInput, setPasswordInput] = useState("")
     const [postToDelete, setPostToDelete] = useState<string | null>(null)
+    const [likedPosts, setLikedPosts] = useState<string[]>([])
     const text = getLanguageText()
 
     // Use SWR for client-side data fetching
@@ -210,6 +211,11 @@ export default function PostModal({
     }
 
     const handleLikePost = async (postId: string) => {
+
+        if (likedPosts.includes(postId)) {
+            toast.info(text.alreadyLiked)
+            return
+        }
         setIsLoading(true)
         setFetchError(null)
         try {
@@ -218,6 +224,7 @@ export default function PostModal({
                     post.id === postId ? { ...post, likes: post.likes + 1 } : post
                 )
             )
+            setLikedPosts((prev) => [...prev, postId])
             const response = await fetch(`/api/posts/${postId}/likes`, {
                 method: "POST",
             })
@@ -241,6 +248,7 @@ export default function PostModal({
                     post.id === postId ? { ...post, likes: post.likes - 1 } : post
                 )
             )
+            setLikedPosts((prev) => prev.filter((id) => id !== postId))
             setFetchError(
                 error instanceof Error ? error.message : text.likePostError
             )
