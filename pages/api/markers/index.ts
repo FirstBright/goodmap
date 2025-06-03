@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ message: "마커 조회 중 오류가 발생했습니다." });
     }
   } else if (req.method === "POST") {
-    const { name, latitude, longitude } = req.body;
+    const { name, latitude, longitude, tags } = req.body;
     console.log("POST request body:", { name, latitude, longitude });
 
     if (!name || typeof latitude !== "number" || typeof longitude !== "number") {
@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const marker = await prisma.marker.create({
-        data: { name, latitude, longitude },
+        data: { name, latitude, longitude, tags: tags || [] },
       });
       console.log("Created marker:", marker);
       return res.status(201).json(marker);
@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ message: "마커 생성 중 오류가 발생했습니다." });
     }
   } else {
-    console.log("Method not allowed:", req.method);
-    return res.status(405).json({ message: "허용되지 않은 메서드입니다." });
+    res.setHeader("Allow", ["GET", "POST"]);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

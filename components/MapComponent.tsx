@@ -30,7 +30,23 @@ interface MarkerData {
     name: string
     latitude: number
     longitude: number
+    tags: string[]
 }
+
+interface Tag {
+    value: string
+    label: string
+}
+
+const getAvailableTags = (isKorean: boolean): Tag[] => [
+    { value: "restaurant", label: isKorean ? "음식점" : "Restaurant" },
+    { value: "accommodation", label: isKorean ? "숙박" : "Accommodation" },
+    { value: "tourism_view", label: isKorean ? "관광/뷰" : "Tourism/View" },
+    { value: "cafe", label: isKorean ? "카페" : "Cafe" },
+    { value: "shopping", label: isKorean ? "쇼핑" : "Shopping" },
+    { value: "incident", label: isKorean ? "사건" : "Incident" },
+    { value: "other", label: isKorean ? "기타" : "Other" },
+];
 
 export default function MapComponent() {
     const [markers, setMarkers] = useState<MarkerData[]>([])
@@ -43,9 +59,12 @@ export default function MapComponent() {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState("")
+    const [selectedTags, setSelectedTags] = useState<string[]>([])
     const mapRef = useRef<L.Map | null>(null)
     const router = useRouter()
     const text = getLanguageText()
+    const isKorean = typeof window !== "undefined" && navigator.language.startsWith("ko");
+    const AVAILABLE_TAGS = getAvailableTags(isKorean)
 
     const [mapState] = useState<{
         lat: number
@@ -108,11 +127,20 @@ export default function MapComponent() {
 
     // 마커 검색 기능
     useEffect(() => {
-        const filtered = markers.filter((marker) =>
-            marker.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        let filtered = markers
+        if (searchQuery) {
+            filtered = filtered.filter((marker) =>
+                marker.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        if (selectedTags.length > 0) {
+            filtered = filtered.filter((marker) =>
+                selectedTags.every((tag) => marker.tags.includes(tag))
+            );
+        }
         setFilteredMarkers(filtered)
-    }, [searchQuery, markers])
+    }, [searchQuery, selectedTags, markers])
 
     const MapClickHandler = () => {
         const map = useMapEvents({
@@ -172,6 +200,11 @@ export default function MapComponent() {
         setSearchQuery("")
         setFilteredMarkers(markers)
     }
+    const toggleTag = (tag: string) => {
+        setSelectedTags((prev) =>
+            prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+        );
+    };
     if (isLoading) {
         return (
             <div className='h-screen flex items-center justify-center'>
@@ -189,20 +222,45 @@ export default function MapComponent() {
     }
 
     return (
-        <div className='min-h-screen flex flex-col justify-center items-center bg-gray-100 '>
+        <div className='min-h-screen flex flex-col justify-center items-center bg-gray-100 py-8'>
             {/* 검색창 */}
-            <div className='w-full max-w-[1080px] px-4 py-4 flex justify-center items-center gap-2 bg-gray-100 shadow-md z-[1000] sm:px-6'>
-                <div className='flex items-center gap-2 w-full sm:w-auto'>
+            <div className='w-full max-w-[1080px] px-4 py-4 bg-gray-100 shadow-md z-[1000] sm:px-6 flex flex-col items-center'>
+                <div className='flex gap-2 w-full sm:w-auto mb-6'>
                     <Input
                         type='text'
                         placeholder={text.searchPlaceholder}
                         value={searchQuery}
                         onChange={handleSearch}
-                        className='w-full sm:w-96'
+                        className='w-full sm:w-96 rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500'
                     />
                     {searchQuery && (
-                        <Button variant='outline' onClick={clearSearch}>
+                        <Button variant='outline' onClick={clearSearch} className="rounded-lg">
                             {text.reset}
+                        </Button>
+                    )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    {AVAILABLE_TAGS.map((tag) => (
+                        <Button
+                            key={tag.value}
+                            variant={selectedTags.includes(tag.value) ? "default" : "outline"}
+                            onClick={() => toggleTag(tag.value)}
+                            className={`text-sm rounded-full px-4 py-1 transition-colors ${
+                                selectedTags.includes(tag.value)
+                                    ? "bg-blue-500 text-white hover:bg-blue-600"
+                                    : "bg-white text-gray-700 hover:bg-gray-100"
+                            }`}
+                        >
+                            {tag.label}
+                        </Button>
+                    ))}
+                    {selectedTags.length > 0 && (
+                        <Button
+                            variant="outline"
+                            onClick={() => setSelectedTags([])}
+                            className="text-sm rounded-full px-4 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                        >
+                            {text.resetTags}
                         </Button>
                     )}
                 </div>

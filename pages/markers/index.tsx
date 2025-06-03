@@ -16,6 +16,7 @@ interface Marker {
     name: string
     latitude: number
     longitude: number
+    tags: string[]
     posts: Post[]
 }
 interface Props {
@@ -38,6 +39,7 @@ export default function MarkersPage({ markers }: Props) {
                 latitude: marker.latitude,
                 longitude: marker.longitude,
             },
+            keywords: marker.tags,
             review: marker.posts.map((post: Post) => ({
                 "@type": "Review",
                 name: post.title,
@@ -137,6 +139,9 @@ export default function MarkersPage({ markers }: Props) {
                             <p className="mb-4">
                                 {marker.name}은(는) 주변에서 추천하는 장소로, 편리한 접근성과 다양한 편의시설을
                                 제공합니다. 위치: 위도 {marker.latitude}, 경도 {marker.longitude}
+                            </p>
+                            <p className="mb-4">
+                                태그: {marker.tags.length > 0 ? marker.tags.join(", ") : "없음"}
                             </p>                            
                             <h3 className="text-xl font-semibold mb-2">리뷰</h3>
                             {marker.posts.length > 0 ? (
@@ -176,6 +181,7 @@ export const getServerSideProps = async () => {
                 name: true,
                 latitude: true,
                 longitude: true,
+                tags: true,
                 posts: {
                     select: {
                         id: true,

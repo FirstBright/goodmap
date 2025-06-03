@@ -20,6 +20,7 @@ model Marker {
   name      String
   latitude  Float
   longitude Float
+  tags      String[] @default([])
   createdAt DateTime @default(now())
   posts     Post[]
   @@index([id])
