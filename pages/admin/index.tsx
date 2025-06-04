@@ -172,6 +172,7 @@ function EditTagsDialog({
 export default function AdminPage() {
     const { data: session, status } = useSession()
     const router = useRouter()
+    const [allMarkers, setAllMarkers] = useState<Marker[]>([])
     const [deletableMarkers, setDeletableMarkers] = useState<Marker[]>([])
     const [posts, setPosts] = useState<Post[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -206,7 +207,8 @@ export default function AdminPage() {
                     const deletable = markersData.filter(
                         (marker) => marker.posts.length === 0
                     )
-
+                    
+                    setAllMarkers(markersData)
                     setDeletableMarkers(deletable)
                     setPosts(postsData.posts)
                     setTotalPosts(postsData.total)
@@ -426,7 +428,7 @@ export default function AdminPage() {
                                 <TableHead>이름</TableHead>
                                 <TableHead>위도</TableHead>
                                 <TableHead>경도</TableHead>
-                                <TableHead>태그</TableHead>
+
                                 <TableHead>작업</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -439,36 +441,7 @@ export default function AdminPage() {
                                         <TableCell>
                                             {marker.longitude}
                                         </TableCell>
-                                        <TableCell>
-                                            {marker.tags.length > 0
-                                                ? marker.tags
-                                                      .map(
-                                                          (tag) =>
-                                                              getAvailableTags(
-                                                                  typeof window !==
-                                                                      "undefined" &&
-                                                                      navigator.language.startsWith(
-                                                                          "ko"
-                                                                      )
-                                                              ).find(
-                                                                  (t) =>
-                                                                      t.value ===
-                                                                      tag
-                                                              )?.label || tag
-                                                      )
-                                                      .join(", ")
-                                                : "없음"}
-                                        </TableCell>
-                                        <TableCell className='flex gap-2'>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    handleEditTags(marker)
-                                                }
-                                            >
-                                                태그 수정
-                                            </Button>
+                                        <TableCell >
                                             <Button
                                                 variant='destructive'
                                                 size='sm'
@@ -490,6 +463,67 @@ export default function AdminPage() {
                                         className='text-center'
                                     >
                                         삭제 가능한 마커가 없습니다.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                    <h2 className='text-lg font-semibold mt-8 mb-4'>
+                        태그 수정
+                    </h2>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>이름</TableHead>
+                                <TableHead>태그</TableHead>
+                                <TableHead>작업</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {allMarkers.length > 0 ? (
+                                allMarkers.map((marker) => (
+                                    <TableRow key={marker.id}>
+                                        <TableCell>{marker.name}</TableCell>
+                                        <TableCell>
+                                            {marker.tags.length > 0
+                                                ? marker.tags
+                                                      .map(
+                                                          (tag) =>
+                                                              getAvailableTags(
+                                                                  typeof window !==
+                                                                      "undefined" &&
+                                                                      navigator.language.startsWith(
+                                                                          "ko"
+                                                                      )
+                                                              ).find(
+                                                                  (t) =>
+                                                                      t.value ===
+                                                                      tag
+                                                              )?.label || tag
+                                                      )
+                                                      .join(", ")
+                                                : "없음"}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() =>
+                                                    handleEditTags(marker)
+                                                }
+                                            >
+                                                태그 수정
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={3}
+                                        className='text-center'
+                                    >
+                                        마커가 없습니다.
                                     </TableCell>
                                 </TableRow>
                             )}
