@@ -6,8 +6,31 @@ export default async function handler(
     res: NextApiResponse
 ) {
     const { id } = req.query
+    if (req.method === "PATCH") {
+        const { tags } = req.body;
+        if (!Array.isArray(tags)) {
+            return res.status(400).json({ message:"태그는 배열이어야 합니다." });
+        }
 
-    if (req.method === "DELETE") {
+        try {
+            const marker = await prisma.marker.update({
+                where: { id: String(id) },
+                data: { tags },
+                select: {
+                    id: true,
+                    name: true,
+                    latitude: true,
+                    longitude: true,
+                    tags: true,
+                    posts: { select: { id: true } },
+                },
+            });
+            res.status(200).json(marker);
+        } catch (error) {
+            console.error("Error updating marker tags:", error);
+            res.status(500).json({ message: "errorUpdatingTags" });
+        }
+    } else if (req.method === "DELETE") {
         try {
             // Check if the marker exists
             const marker = await prisma.marker.findUnique({

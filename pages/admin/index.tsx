@@ -14,11 +14,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { debounce } from "lodash"
 import * as Dialog from "@radix-ui/react-dialog"
 
+interface Tag {
+    value: string
+    label: string
+}
+
+const getAvailableTags = (isKorean: boolean): Tag[] => [
+    { value: "restaurant", label: isKorean ? "음식점" : "Restaurant" },
+    { value: "accommodation", label: isKorean ? "숙박" : "Accommodation" },
+    { value: "tourism_view", label: isKorean ? "관광/뷰" : "Tourism/View" },
+    { value: "cafe", label: isKorean ? "카페" : "Cafe" },
+    { value: "shopping", label: isKorean ? "쇼핑" : "Shopping" },
+    { value: "incident", label: isKorean ? "사건" : "Incident" },
+    { value: "other", label: isKorean ? "기타" : "Other" },
+]
+
 interface Marker {
     id: string
     name: string
     latitude: number
     longitude: number
+    tags: string[]
     posts: { id: string }[]
 }
 
@@ -34,6 +50,13 @@ interface ConfirmDialogProps {
     onConfirm: () => void
     title: string
     description: string
+}
+
+interface EditTagsDialogProps {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    marker: Marker | null
+    onSave: (markerId: string, tags: string[]) => void
 }
 
 function ConfirmDialog({
@@ -71,6 +94,81 @@ function ConfirmDialog({
     )
 }
 
+function EditTagsDialog({
+    open,
+    onOpenChange,
+    marker,
+    onSave,
+}: EditTagsDialogProps) {
+    const AVAILABLE_TAGS = getAvailableTags(true);
+    const [selectedTags, setSelectedTags] = useState<string[]>(marker?.tags || []);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const toggleTag = (tagValue: string) => {
+        setSelectedTags((prev) =>
+            prev.includes(tagValue)
+                ? prev.filter((t) => t !== tagValue)
+                : [...prev, tagValue]
+        );
+    };
+
+    const handleSave = async () => {
+        if (!marker) return;
+        setIsSaving(true);
+        try {
+            await onSave(marker.id, selectedTags);
+            onOpenChange(false);
+        } catch (error) {
+            console.error("errorUpdatingTags", error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+    return (
+        <Dialog.Root open={open} onOpenChange={onOpenChange}>
+            <Dialog.Portal>
+                <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+                <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                    <Dialog.Title className="text-lg font-semibold">
+                        태그수정
+                    </Dialog.Title>
+                    <Dialog.Description className="mt-2 text-gray-600">
+                        {marker?.name || ""}
+                    </Dialog.Description>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {AVAILABLE_TAGS.map((tag) => (
+                            <label key={tag.value} className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedTags.includes(tag.value)}
+                                    onChange={() => toggleTag(tag.value)}
+                                    disabled={isSaving}
+                                />
+                                <span>{tag.label}</span>
+                            </label>
+                        ))}
+                    </div>
+                    <div className="mt-4 flex justify-end space-x-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                            disabled={isSaving}
+                        >
+                            취소
+                        </Button>
+                        <Button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                        >
+                            저장
+                        </Button>
+                    </div>
+                </Dialog.Content>
+            </Dialog.Portal>
+        </Dialog.Root>
+    );
+}
+
 export default function AdminPage() {
     const { data: session, status } = useSession()
     const router = useRouter()
@@ -84,6 +182,8 @@ export default function AdminPage() {
         "deletePost" | "deleteMarker" | null
     >(null)
     const [itemToDelete, setItemToDelete] = useState<string | null>(null)
+    const [editTagsOpen, setEditTagsOpen] = useState(false);
+    const [markerToEdit, setMarkerToEdit] = useState<Marker | null>(null);
     const limit = 10
 
     const fetchData = useMemo(
@@ -143,6 +243,35 @@ export default function AdminPage() {
         setItemToDelete(id)
         setConfirmAction("deletePost")
         setConfirmOpen(true)
+    }
+
+    const handleEditTags = (marker: Marker) => {
+        setMarkerToEdit(marker);
+        setEditTagsOpen(true);
+    }
+
+    const handleSaveTags = async (markerId: string, tags: string[]) => {
+        try {
+            const response = await fetch(`/api/markers/${markerId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tags }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || "errorUpdatingTags");
+            }
+
+            setDeletableMarkers((prev) =>
+                prev.map((marker) =>
+                    marker.id === markerId ? { ...marker, tags } : marker
+                )
+            );
+        } catch (error) {
+            console.error("Error updating tags:", error);
+            throw error;
+        }
     }
 
     const confirmDelete = async () => {
@@ -297,6 +426,7 @@ export default function AdminPage() {
                                 <TableHead>이름</TableHead>
                                 <TableHead>위도</TableHead>
                                 <TableHead>경도</TableHead>
+                                <TableHead>태그</TableHead>
                                 <TableHead>작업</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -310,6 +440,35 @@ export default function AdminPage() {
                                             {marker.longitude}
                                         </TableCell>
                                         <TableCell>
+                                            {marker.tags.length > 0
+                                                ? marker.tags
+                                                      .map(
+                                                          (tag) =>
+                                                              getAvailableTags(
+                                                                  typeof window !==
+                                                                      "undefined" &&
+                                                                      navigator.language.startsWith(
+                                                                          "ko"
+                                                                      )
+                                                              ).find(
+                                                                  (t) =>
+                                                                      t.value ===
+                                                                      tag
+                                                              )?.label || tag
+                                                      )
+                                                      .join(", ")
+                                                : "없음"}
+                                        </TableCell>
+                                        <TableCell className='flex gap-2'>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() =>
+                                                    handleEditTags(marker)
+                                                }
+                                            >
+                                                태그 수정
+                                            </Button>
                                             <Button
                                                 variant='destructive'
                                                 size='sm'
@@ -356,6 +515,17 @@ export default function AdminPage() {
                         ? "이 포스트를 삭제하시겠습니까?"
                         : "이 마커를 삭제하시겠습니까?"
                 }
+            />
+            <EditTagsDialog
+                open={editTagsOpen}
+                onOpenChange={(open) => {
+                    setEditTagsOpen(open);
+                    if (!open) {
+                        setMarkerToEdit(null);
+                    }
+                }}
+                marker={markerToEdit}
+                onSave={handleSaveTags}
             />
         </div>
     )
