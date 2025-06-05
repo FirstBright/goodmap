@@ -159,7 +159,7 @@ export default function MapComponent() {
             sessionStorage.removeItem("searchQuery")
             log("Cleared searchQuery from sessionStorage due to empty string")
         }
-    }, [selectedTags, searchQuery])
+    }, [selectedTags, searchQuery, saveToSessionStorage])
 
     useEffect(() => {
         const fetchMarkers = async () => {
