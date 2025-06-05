@@ -189,7 +189,11 @@ export default function MapComponent() {
     useEffect(() => {
         if (mapRef.current) {
             log("Map initialized:", mapRef.current.getCenter())
-            mapRef.current.invalidateSize() // Fix map sizing issues
+            mapRef.current.setMaxBounds([
+                [90, -180], // North-East corner
+                [-90, 180], // South-West corner
+            ])
+            mapRef.current.invalidateSize()
         }
     }, [])
 
@@ -379,6 +383,12 @@ export default function MapComponent() {
                         style={{ height: "100%", width: "100%", zIndex: 0 }}
                         className='rounded-lg shadow-md'
                         ref={mapRef}
+                        maxBounds={[
+                            [-90, -180], 
+                            [90, 180], 
+                        ]}
+                        worldCopyJump={false}
+                        minZoom={3}
                     >
                         <TileLayer
                             url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
