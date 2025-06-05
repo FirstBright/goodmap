@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import {
     MapContainer,
     TileLayer,
@@ -92,6 +92,74 @@ export default function MapComponent() {
         }
         return { lat: 37.5238, lng: 126.9266, zoom: 13 }
     })
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            try {
+                const savedTags = sessionStorage.getItem("selectedTags")
+                log("Attempting to load selectedTags from sessionStorage:", savedTags)
+                if (savedTags) {
+                    const parsedTags = JSON.parse(savedTags)
+                    if (Array.isArray(parsedTags) && parsedTags.every(t => typeof t === "string")) {
+                        setSelectedTags(parsedTags)
+                        log("Successfully loaded selectedTags:", parsedTags)
+                    } else {
+                        log("Invalid selectedTags format in sessionStorage:", parsedTags)
+                    }
+                } else {
+                    log("No selectedTags found in sessionStorage")
+                }
+                const savedQuery = sessionStorage.getItem("searchQuery")
+                log("Attempting to load searchQuery from sessionStorage:", savedQuery)
+                if (savedQuery) {
+                    const parsedQuery = JSON.parse(savedQuery)
+                    if (typeof parsedQuery === "string") {
+                        setSearchQuery(parsedQuery)
+                        log("Successfully loaded searchQuery:", parsedQuery)
+                    }else {
+                        log("Invalid searchQuery format in sessionStorage:", parsedQuery)
+                    }
+                } else {
+                    log("No searchQuery found in sessionStorage")
+
+                }
+            } catch (err) {
+                console.error("Error parsing sessionStorage data:", err)
+                setError("Failed to load saved filters")
+            }
+        }
+    }, [])
+    const saveToSessionStorage = useCallback((key: string, value: string | string[]) => {
+        if (typeof window !== "undefined") {
+            try {
+                // 빈 배열이나 빈 문자열은 저장하지 않음
+                if ((Array.isArray(value) && value.length === 0) || value === "") {
+                    log(`Skipping save for ${key} as it is empty:`, value)
+                    sessionStorage.removeItem(key)
+                    return
+                }
+                sessionStorage.setItem(key, JSON.stringify(value))
+                log(`Saved ${key} to sessionStorage:`, value)
+            } catch (err) {
+                console.error(`Error saving ${key} to sessionStorage:`, err)
+                setError(text.errorSavingSessionData || "Failed to save filters")
+            }
+        }
+    },[text.errorSavingSessionData])
+    useEffect(() => {
+        if (selectedTags.length > 0) {
+            saveToSessionStorage("selectedTags", selectedTags)
+        }else {
+            sessionStorage.removeItem("selectedTags")
+            log("Cleared selectedTags from sessionStorage due to empty array")
+        }
+        if (searchQuery !== "") {
+            saveToSessionStorage("searchQuery", searchQuery)
+        }else {
+            sessionStorage.removeItem("searchQuery")
+            log("Cleared searchQuery from sessionStorage due to empty string")
+        }
+    }, [selectedTags, searchQuery])
 
     useEffect(() => {
         const fetchMarkers = async () => {
@@ -194,17 +262,53 @@ export default function MapComponent() {
         }
     }
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(e.target.value)
+        const value = e.target.value
+        setSearchQuery(value)
+        if (value !== "") {
+            saveToSessionStorage("searchQuery", value)
+        } else {
+            sessionStorage.removeItem("searchQuery")
+            log("Cleared searchQuery from sessionStorage due to empty input")
+        }
     }
     const clearSearch = () => {
         setSearchQuery("")
+        if (typeof window !== "undefined") {
+            try {
+                sessionStorage.removeItem("searchQuery")
+                log("Cleared searchQuery from sessionStorage")
+            } catch (err) {
+                console.error("Error clearing searchQuery from sessionStorage:", err)
+                setError(text.errorSavingSessionData || "Failed to clear search")
+            }
+        }
         setFilteredMarkers(markers)
     }
     const toggleTag = (tag: string) => {
-        setSelectedTags((prev) =>
-            prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-        );
+        setSelectedTags((prev) => {
+            const newTags = prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+            if (newTags.length > 0) {
+                saveToSessionStorage("selectedTags", newTags)
+            } else {
+                sessionStorage.removeItem("selectedTags")
+                log("Cleared selectedTags from sessionStorage due to empty array")
+            }
+            return newTags
+        })
     };
+    const handleResetTags = () => {
+        setSelectedTags([])
+        if (typeof window !== "undefined") {
+            try {
+                sessionStorage.removeItem("selectedTags")
+                log("Cleared selectedTags from sessionStorage")
+            } catch (err) {
+                console.error("Error clearing selectedTags from sessionStorage:", err)
+                setError(text.errorSavingSessionData || "Failed to clear tags")
+            }
+        }
+    }
+
     if (isLoading) {
         return (
             <div className='h-screen flex items-center justify-center'>
@@ -257,7 +361,7 @@ export default function MapComponent() {
                     {selectedTags.length > 0 && (
                         <Button
                             variant="outline"
-                            onClick={() => setSelectedTags([])}
+                            onClick={handleResetTags}
                             className="text-sm rounded-full px-4 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
                         >
                             {text.resetTags}

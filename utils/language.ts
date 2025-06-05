@@ -41,6 +41,7 @@ export const getLanguageText = () => {
             alreadyLiked: "이미 좋아요를 눌렀습니다.",
             selectTags: "태그 선택",
             resetTags: "태그 초기화",
+            errorSavingSessionData: "세션 데이터를 저장하는 중 오류가 발생했습니다.",           
         }
         : {
             // English text
@@ -82,5 +83,6 @@ export const getLanguageText = () => {
             alreadyLiked: "You have already liked this post.",
             selectTags: "Select Tags",
             resetTags: "Reset Tags",
+            errorSavingSessionData: "An error occurred while saving session data.",           
         }
 }
