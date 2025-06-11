@@ -1,5 +1,4 @@
 import { Html, Head, Main, NextScript } from "next/document";
-import Script from "next/script";
 export default function Document() {
   const isProd = process.env.NODE_ENV === "production";
 
@@ -7,12 +6,11 @@ export default function Document() {
     <Html lang="en">
       <Head>
       {isProd && (
-          <Script
+          <script
             async
             src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9025940068718161"
-            strategy="lazyOnload"
             crossOrigin="anonymous"
-          />
+          ></script>
         )}
         </Head>
       <body className="antialiased">
