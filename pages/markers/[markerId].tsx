@@ -9,8 +9,20 @@ import Head from "next/head"
 const MapComponent = dynamic(() => import("@/components/MapComponent"), {
     ssr: false,
     loading: () => (
-        <div className='h-screen flex items-center justify-center'>
-            Loading...
+        <div className='h-screen flex flex-col items-center justify-center bg-gray-100'>
+            <div className='w-full max-w-[1080px] px-4 sm:px-6 text-center'>
+                <h1 className='text-3xl font-bold text-gray-800 mb-4'>
+                    Loading Map...
+                </h1>
+                <p className='text-lg text-gray-600 mb-6'>
+                    Explore posts and share experiences at this location on GoodMap.
+                </p>
+                <div className='space-y-4'>
+                    <div className='animate-pulse w-3/4 h-6 bg-gray-200 rounded mx-auto' />
+                    <div className='animate-pulse w-1/2 h-4 bg-gray-200 rounded mx-auto' />
+                    <div className='animate-pulse w-2/3 h-4 bg-gray-200 rounded mx-auto' />
+                </div>
+            </div>
         </div>
     ),
 })
@@ -109,6 +121,22 @@ export default function MarkerPage({ marker, posts }: Props) {
                 />
             </Head>
             <main className='h-screen'>
+                <div className='hidden'>
+                    <h1>{marker.name}</h1>
+                    <p>Explore posts at {marker.name}:</p>
+                    <ul>
+                        {posts.map((post) => (
+                            <li key={post.id}>
+                                <h1>
+                                    {post.title}
+                                </h1>
+                                <p>
+                                    {post.content}
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
                 <MapComponent />
                 <PostModal
                     isOpen={isModalOpen}
