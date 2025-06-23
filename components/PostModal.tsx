@@ -442,7 +442,7 @@ export default function PostModal({
                                                 </form>
                                             ) : (
                                                 <>
-                                                    <h3 className='font-bold'>
+                                                    <h3 className='mb-2 text-lg font-semibold'>
                                                         {post.title}
                                                     </h3>
                                                     <p className='break-words whitespace-pre-wrap text-sm md:text-base leading-relaxed'>

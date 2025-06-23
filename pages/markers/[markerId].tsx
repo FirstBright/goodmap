@@ -124,7 +124,7 @@ export default function MarkerPage({ marker, posts }: Props) {
                     <ul>
                         {posts.map((post) => (
                             <li key={post.id}>
-                                <h1 className="mb-2 text-xl font-semibold">
+                                <h1>
                                     {post.title}
                                 </h1>
                                 <p>
