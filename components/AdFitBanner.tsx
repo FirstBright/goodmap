@@ -19,7 +19,7 @@ const AdFitBanner: React.FC<AdFitBannerProps> = ({
 
   // Detect device based on screen width
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const mediaQuery = window.matchMedia('(max-width: 1435px)');
     setIsMobile(mediaQuery.matches);
 
     const handleResize = (e: MediaQueryListEvent) => {
