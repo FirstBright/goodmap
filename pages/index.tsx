@@ -121,7 +121,7 @@ export default function Home() {
                                 mobileAdUnit="DAN-WCxQYYTxuTSxEFAF"
                                 pcAdUnit="DAN-h3lEt6y18Q5XJYRN"
                                 enabled={process.env.NEXT_PUBLIC_ADFIT_ENABLED === "true"}
-                                className="hidden md:block"
+                                className="md:block"
                             />
                         </div>
                     </>
