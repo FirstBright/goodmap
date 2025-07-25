@@ -1,40 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# GoodMap - A Positive Community Map Platform
 
-## Getting Started
+GoodMap is a unique social platform that combines the concept of Reddit with geographical mapping, focusing on spreading positivity through location-based posts. It's a place where users can discover and share positive experiences, stories, and moments tied to specific locations.
 
-First, run the development server:
+## 🌟 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Map-Based Interaction
+- Interactive map interface showing posts based on geographical coordinates
+- Automatic location detection for users (with permission)
+- Custom location markers for new positive spaces
+
+### Post Management
+- Location-based positive posts only
+- Posts sorted by likes and engagement
+- Real-time updates of nearby posts
+- AI-powered content moderation
+
+### Admin Features
+- Comprehensive admin dashboard
+- Real-time post monitoring
+- AI-assisted content moderation
+- Automated cleanup of inactive markers and negative content
+- Manual post deletion capabilities
+
+### User Experience
+- Create and name new positive locations
+- View and interact with nearby positive posts
+- Like and engage with community content
+- Discover new positive spaces in your area
+
+## 🛠️ Technical Stack
+
+- **Frontend**: Next.js with TypeScript
+- **UI Components**: ShadCN UI
+- **Styling**: Tailwind CSS
+- **Database**: Prisma with PostgreSQL
+- **Package Manager**: pnpm
+- **Authentication**: NextAuth.js
+- **Maps**: Mapbox/Google Maps API
+- **AI Integration**: For content moderation
+
+## 🔄 System Architecture
+
+1. **Location Detection**
+   - Browser geolocation API
+   - Manual location input option
+
+2. **Post Creation**
+   - Location-based marker creation
+   - Positive content validation
+   - Real-time post submission
+
+3. **Content Moderation**
+   - AI-powered sentiment analysis
+   - Automated cleanup every 5 minutes
+   - Admin manual review system
+
+4. **User Interaction**
+   - Like-based post sorting
+   - Location-based post discovery
+   - Real-time updates
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18 or higher)
+- pnpm
+- PostgreSQL database
+
+### Installation
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+3. Set up environment variables
+4. Run the development server:
+   ```bash
+   pnpm dev
+   ```
+
+## 📝 Project Structure
+
+```
+goodmap/
+├── components/
+│   ├── ui/           # ShadCN components
+│   └── ...          # Custom components
+├── app/             # Next.js app directory
+├── prisma/          # Database schema and migrations
+├── public/          # Static assets
+└── ...             # Configuration files
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔒 Security Considerations
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+- User authentication and authorization
+- Content moderation system
+- Location data privacy
+- API key management
+- Rate limiting
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## 🤝 Contributing
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+Contributions are welcome! Please read our contributing guidelines before submitting pull requests.
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📄 License
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+This project is licensed under the MIT License - see the LICENSE file for details.
