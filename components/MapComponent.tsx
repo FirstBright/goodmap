@@ -339,7 +339,7 @@ export default function MapComponent() {
                         placeholder={text.searchPlaceholder}
                         value={searchQuery}
                         onChange={handleSearch}
-                        className='w-full sm:w-96 rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500'
+                        className='w-full sm:w-96 rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900'
                     />
                     {searchQuery && (
                         <Button variant='outline' onClick={clearSearch} className="rounded-lg">
