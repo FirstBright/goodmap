@@ -30,6 +30,7 @@ const cleanupImages = async () => {
 
 // --- Singleton Pattern to ensure cron is scheduled only once ---
 declare global {
+    // eslint-disable-next-line no-var
     var __cron_scheduled__: boolean | undefined;
 }
 
