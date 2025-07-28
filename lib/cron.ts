@@ -30,7 +30,6 @@ const cleanupImages = async () => {
 
 // --- Singleton Pattern to ensure cron is scheduled only once ---
 declare global {
-    // eslint-disable-next-line no-var
     var __cron_scheduled__: boolean | undefined;
 }
 
@@ -38,7 +37,6 @@ if (!global.__cron_scheduled__) {
     // Schedule the job to run every day at 3:00 AM
     // The cron syntax is: minute hour day-of-month month day-of-week
     cron.schedule('0 3 * * *', cleanupImages, {
-        scheduled: true,
         timezone: "Asia/Seoul",
     });
 
