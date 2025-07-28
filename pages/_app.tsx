@@ -1,5 +1,9 @@
 import "@/styles/globals.css"
 import "leaflet/dist/leaflet.css"
+// Conditionally import the cron job only on the server-side
+if (typeof window === 'undefined') {
+    require("@/lib/cron");
+}
 import type { AppProps } from "next/app"
 import { SessionProvider } from "next-auth/react"
 import GoogleAnalytics from "@/components/GoogleAnalytics"

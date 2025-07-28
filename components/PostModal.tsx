@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
     Dialog,
     DialogContent,
@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import RichTextEditor, { RichTextEditorRef } from "./RichTextEditor"
 import useSWR from "swr"
 import { useRouter } from "next/router"
 import { toast } from "react-toastify"
@@ -78,6 +78,8 @@ export default function PostModal({
     const [postToDelete, setPostToDelete] = useState<string | null>(null)
     const [likedPosts, setLikedPosts] = useState<string[]>([])
     const text = getLanguageText()
+    const editorRef = useRef<RichTextEditorRef>(null)
+    const createFormRef = useRef<HTMLFormElement>(null)
 
     // Use SWR for client-side data fetching
     const { data, error, mutate } = useSWR(
@@ -96,6 +98,14 @@ export default function PostModal({
             setFetchError(text.postError)
         }
     }, [data, error, text.postError])
+
+    useEffect(() => {
+        if (isCreateFormOpen) {
+            setTimeout(() => {
+                createFormRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+            }, 100); // A small delay to ensure the form is rendered
+        }
+    }, [isCreateFormOpen]);
 
     useEffect(() => {
         if (isOpen && editId && posts.length) {
@@ -129,6 +139,7 @@ export default function PostModal({
             trackEvent("post_created", markerName)
             const newPostData = await response.json()
             setNewPost({ title: "", content: "", password: "" })
+            editorRef.current?.clearContent()
             setIsCreateFormOpen(false)
             mutate(
                 (currentPosts: Post[] = []) => [...currentPosts, newPostData],
@@ -185,6 +196,7 @@ export default function PostModal({
         setIsLoading(true)
         setFetchError(null)
         try {
+            // TODO: Implement image deletion from filesystem
             const response = await fetch(`/api/posts/${postId}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
@@ -332,189 +344,184 @@ export default function PostModal({
                             </div>
                         </div>
                     ) : (
-                        <>
+                        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
                             {/* 글 목록 */}
-                            <div className='space-y-4 max-h-[60vh] overflow-y-auto'>
-                                {!isCreateFormOpen && !editPost && (
-                                    <div className='flex justify-end space-x-2 mb-4'>
-                                        {posts.length === 0 && (
-                                            <Button
-                                                variant='destructive'
-                                                onClick={() =>
-                                                    setIsDeleteConfirmOpen(true)
-                                                }
-                                                disabled={isLoading}
-                                            >
-                                                {text.delete}
-                                            </Button>
-                                        )}
+                            {!isCreateFormOpen && !editPost && (
+                                <div className='flex justify-end space-x-2 mb-4'>
+                                    {posts.length === 0 && (
                                         <Button
+                                            variant='destructive'
                                             onClick={() =>
-                                                setIsCreateFormOpen(true)
+                                                setIsDeleteConfirmOpen(true)
                                             }
                                             disabled={isLoading}
                                         >
-                                            {text.writePost}
+                                            {text.delete}
                                         </Button>
-                                    </div>
-                                )}
-                                {isLoading && !posts.length ? (
-                                    <div className='text-center text-gray-500'>
-                                        {text.loading}
-                                    </div>
-                                ) : posts.length > 0 ? (
-                                    posts.map((post) => (
-                                        <div
-                                            key={post.id}
-                                            className='border p-4 rounded-lg'
-                                        >
-                                            {editPost?.id === post.id ? (
-                                                <form
-                                                    onSubmit={handleEditPost}
-                                                    className='space-y-2'
-                                                >
-                                                    <Input
-                                                        value={editPost.title}
-                                                        onChange={(e) =>
-                                                            setEditPost({
-                                                                ...editPost,
-                                                                title: e.target
+                                    )}
+                                    <Button
+                                        onClick={() =>
+                                            setIsCreateFormOpen(true)
+                                        }
+                                        disabled={isLoading}
+                                    >
+                                        {text.writePost}
+                                    </Button>
+                                </div>
+                            )}
+                            {isLoading && !posts.length ? (
+                                <div className='text-center text-gray-500'>
+                                    {text.loading}
+                                </div>
+                            ) : posts.length > 0 ? (
+                                posts.map((post) => (
+                                    <div
+                                        key={post.id}
+                                        className='border p-4 rounded-lg'
+                                    >
+                                        {editPost?.id === post.id ? (
+                                            <form
+                                                onSubmit={handleEditPost}
+                                                className='space-y-2'
+                                            >
+                                                <Input
+                                                    value={editPost.title}
+                                                    onChange={(e) =>
+                                                        setEditPost({
+                                                            ...editPost,
+                                                            title: e.target
+                                                                .value,
+                                                        })
+                                                    }
+                                                    placeholder={
+                                                        text.titlePlaceholder
+                                                    }
+                                                />
+                                                <RichTextEditor
+                                                    ref={editorRef}
+                                                    initialContent={editPost.content}
+                                                    onChange={(html) =>
+                                                        setEditPost({
+                                                            ...editPost,
+                                                            content: html,
+                                                        })
+                                                    }
+                                                />
+                                                <Input
+                                                    type='password'
+                                                    value={
+                                                        editPost.password
+                                                    }
+                                                    onChange={(e) =>
+                                                        setEditPost({
+                                                            ...editPost,
+                                                            password:
+                                                                e.target
                                                                     .value,
-                                                            })
+                                                        })
+                                                    }
+                                                    placeholder={
+                                                        text.passwordPlaceholder
+                                                    }
+                                                    required
+                                                />
+                                                <div className='flex justify-end space-x-2'>
+                                                    <Button
+                                                        type='button'
+                                                        variant='outline'
+                                                        onClick={() =>
+                                                            setEditPost(
+                                                                null
+                                                            )
                                                         }
-                                                        placeholder={
-                                                            text.titlePlaceholder
-                                                        }
-                                                    />
-                                                    <Textarea
-                                                        value={editPost.content}
-                                                        onChange={(e) =>
-                                                            setEditPost({
-                                                                ...editPost,
-                                                                content:
-                                                                    e.target
-                                                                        .value,
-                                                            })
-                                                        }
-                                                        placeholder={
-                                                            text.contentPlaceholder
-                                                        }
-                                                        required
-                                                    />
-                                                    <Input
-                                                        type='password'
-                                                        value={
-                                                            editPost.password
-                                                        }
-                                                        onChange={(e) =>
-                                                            setEditPost({
-                                                                ...editPost,
-                                                                password:
-                                                                    e.target
-                                                                        .value,
-                                                            })
-                                                        }
-                                                        placeholder={
-                                                            text.passwordPlaceholder
-                                                        }
-                                                        required
-                                                    />
-                                                    <div className='flex justify-end space-x-2'>
-                                                        <Button
-                                                            type='button'
-                                                            variant='outline'
-                                                            onClick={() =>
-                                                                setEditPost(
-                                                                    null
-                                                                )
-                                                            }
-                                                            disabled={isLoading}
-                                                        >
-                                                            {text.cancel}
-                                                        </Button>
-                                                        <Button
-                                                            type='submit'
-                                                            disabled={isLoading}
-                                                        >
-                                                            {text.save}
-                                                        </Button>
-                                                    </div>
-                                                </form>
-                                            ) : (
-                                                <>
-                                                    <h3 className='mb-2 text-lg font-semibold'>
-                                                        {post.title}
-                                                    </h3>
-                                                    <p className='break-words whitespace-pre-wrap text-sm md:text-base leading-relaxed'>
-                                                        {post.content}
-                                                    </p>
-                                                    <p className='text-sm text-gray-500'>
-                                                        {new Date(
-                                                            post.createdAt
-                                                        ).toLocaleString()}
-                                                    </p>
-                                                    <div className='flex justify-end space-x-2 mt-2'>
-                                                        <div className='flex items-center space-x-1'>
-                                                            <span className='text-sm text-gray-600'>
-                                                                {post.likes} {post.likes === 1 ? 'Like' : 'Likes'}
-                                                            </span>
-                                                            <Button
-                                                                variant='outline'
-                                                                onClick={() =>
-                                                                    handleLikePost(
-                                                                        post.id
-                                                                    )
-                                                                }
-                                                                disabled={isLoading}
-                                                            >
-                                                                {text.like}
-                                                            </Button>
-                                                        </div>
+                                                        disabled={isLoading}
+                                                    >
+                                                        {text.cancel}
+                                                    </Button>
+                                                    <Button
+                                                        type='submit'
+                                                        disabled={isLoading}
+                                                    >
+                                                        {text.save}
+                                                    </Button>
+                                                </div>
+                                            </form>
+                                        ) : (
+                                            <>
+                                                <h3 className='mb-2 text-lg font-semibold'>
+                                                    {post.title}
+                                                </h3>
+                                                <div
+                                                    className='prose dark:prose-invert max-w-none'
+                                                    dangerouslySetInnerHTML={{ __html: post.content }}
+                                                />
+                                                <p className='text-sm text-gray-500'>
+                                                    {new Date(
+                                                        post.createdAt
+                                                    ).toLocaleString()}
+                                                </p>
+                                                <div className='flex justify-end space-x-2 mt-2'>
+                                                    <div className='flex items-center space-x-1'>
+                                                        <span className='text-sm text-gray-600'>
+                                                            {post.likes} {post.likes === 1 ? 'Like' : 'Likes'}
+                                                        </span>
                                                         <Button
                                                             variant='outline'
                                                             onClick={() =>
-                                                                setEditPost({
-                                                                    id: post.id,
-                                                                    title: post.title,
-                                                                    content:
-                                                                        post.content,
-                                                                    password:
-                                                                        "",
-                                                                })
-                                                            }
-                                                            disabled={isLoading}
-                                                        >
-                                                            {text.edit}
-                                                        </Button>
-                                                        <Button
-                                                            variant='destructive'
-                                                            onClick={() => {
-                                                                setPostToDelete(
+                                                                handleLikePost(
                                                                     post.id
                                                                 )
-                                                                setIsPasswordModalOpen(
-                                                                    true
-                                                                )
-                                                            }}
+                                                            }
                                                             disabled={isLoading}
                                                         >
-                                                            {text.delete}
+                                                            {text.like}
                                                         </Button>
                                                     </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className='text-center text-gray-500'>
-                                        {text.noPosts}
+                                                    <Button
+                                                        variant='outline'
+                                                        onClick={() =>
+                                                            setEditPost({
+                                                                id: post.id,
+                                                                title: post.title,
+                                                                content:
+                                                                    post.content,
+                                                                password:
+                                                                    "",
+                                                            })
+                                                        }
+                                                        disabled={isLoading}
+                                                    >
+                                                        {text.edit}
+                                                    </Button>
+                                                    <Button
+                                                        variant='destructive'
+                                                        onClick={() => {
+                                                            setPostToDelete(
+                                                                post.id
+                                                            )
+                                                            setIsPasswordModalOpen(
+                                                                true
+                                                            )
+                                                        }}
+                                                        disabled={isLoading}
+                                                    >
+                                                        {text.delete}
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                ))
+                            ) : (
+                                <div className='text-center text-gray-500'>
+                                    {text.noPosts}
+                                </div>
+                            )}
 
                             {/* 새 글 작성 */}
                             {isCreateFormOpen && (
                                 <form
+                                    ref={createFormRef}
                                     onSubmit={handleCreatePost}
                                     className='space-y-4 mt-4'
                                 >
@@ -529,18 +536,15 @@ export default function PostModal({
                                         placeholder={text.titlePlaceholder}
                                         disabled={isLoading}
                                     />
-                                    <Textarea
-                                        value={newPost.content}
-                                        onChange={(e) =>
+                                    <RichTextEditor
+                                        ref={editorRef}
+                                        initialContent={newPost.content}
+                                        onChange={(html) =>
                                             setNewPost({
                                                 ...newPost,
-                                                content: e.target.value,
+                                                content: html,
                                             })
                                         }
-                                        placeholder={text.contentPlaceholder}
-                                        required
-                                        disabled={isLoading}
-                                        className='min-h-[100px]'
                                     />
                                     <Input
                                         type='password'
@@ -575,7 +579,7 @@ export default function PostModal({
                                     </div>
                                 </form>
                             )}
-                        </>
+                        </div>
                     )}
                 </DialogContent>
             </Dialog>

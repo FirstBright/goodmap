@@ -3,6 +3,19 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "next-auth/react";
 import bcrypt from "bcryptjs";
 import { getRedis } from "@/lib/redis";
+import fs from 'fs';
+import path from 'path';
+
+// Function to extract image URLs from post content
+const extractImageUrls = (content: string): string[] => {
+    const imageUrls: string[] = [];
+    const imgTagRegex = /<img[^>]+src="([^">]+)"/g;
+    let match;
+    while ((match = imgTagRegex.exec(content)) !== null) {
+        imageUrls.push(match[1]);
+    }
+    return imageUrls;
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const session = await getSession({ req });
@@ -29,6 +42,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const isValid = await bcrypt.compare(password, post.password);
                 if (!isValid) {
                     return res.status(403).json({ message: "비밀번호가 틀렸습니다." });
+                }
+            }
+
+            // Delete associated images from the filesystem
+            const imageUrls = extractImageUrls(post.content);
+            for (const url of imageUrls) {
+                try {
+                    const filePath = path.join(process.cwd(), 'public', url);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                } catch (error) {
+                    console.error(`Error deleting image file: ${url}`, error);
+                    // Don't block post deletion if an image fails to delete
                 }
             }
 
