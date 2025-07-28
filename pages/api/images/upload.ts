@@ -33,12 +33,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return `${part.name}-${uniqueSuffix}${ext}`;
         },
         // Filter to only allow image files
-        filter: function ({ name: _name, originalFilename: _originalFilename, mimetype }) {
-            const valid = mimetype && mimetype.includes('image');
+        filter: function (part) {
+            const valid = part.mimetype && part.mimetype.includes('image');
             if (!valid) {
                 form.emit('error', new Error('File type is not an image'));
             }
-            return valid;
+            return !!valid;
         },
     });
 
