@@ -36,9 +36,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         filter: function (part) {
             const valid = part.mimetype && part.mimetype.includes('image');
             if (!valid) {
-                form.emit('error', new Error('File type is not an image'));
+                // Throw an error to reject the file. This will be caught by the `form.parse` callback.
+                throw new Error('File type is not an image. Only image files are allowed.');
             }
-            return !!valid;
+            return true;
         },
     });
 
