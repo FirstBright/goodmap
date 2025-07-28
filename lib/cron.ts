@@ -30,7 +30,7 @@ const cleanupImages = async () => {
 
 // --- Singleton Pattern to ensure cron is scheduled only once ---
 declare global {
-    var __cron_scheduled__: boolean | undefined;
+    let __cron_scheduled__: boolean | undefined;
 }
 
 if (!global.__cron_scheduled__) {
