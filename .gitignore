@@ -43,3 +43,6 @@ next-env.d.ts
 #pm2
 pm2*
 ecosystem.config.js
+
+#post image
+/public/uploads/*
