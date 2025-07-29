@@ -2,6 +2,8 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
+import { ImagePlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
     forwardRef,
     useEffect,
@@ -137,7 +139,55 @@ const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(
             }
         }, [initialContent, editor]);
 
-        return <EditorContent editor={editor} />;
+        const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+            const file = event.target.files?.[0];
+            if (file && editor) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('/api/images/upload', {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.url) {
+                            const { schema } = editor.view.state;
+                            const node = schema.nodes.image.create({ src: data.url });
+                            const transaction = editor.view.state.tr.insert(editor.state.selection.from, node);
+                            editor.view.dispatch(transaction);
+                        } else {
+                            console.error('Image upload failed:', data.error);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error uploading image:', error);
+                    });
+            }
+        };
+
+        return (
+            <div className="border rounded-md">
+                <div className="p-1 border-b">
+                    <input
+                        type="file"
+                        id="fileInput"
+                        style={{ display: 'none' }}
+                        onChange={handleFileChange}
+                        accept="image/*"
+                    />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById('fileInput')?.click()}
+                    >
+                        <ImagePlus className="h-4 w-4" />
+                    </Button>
+                </div>
+                <EditorContent editor={editor} />
+            </div>
+        );
     }
 );
 

@@ -525,40 +525,53 @@ export default function PostModal({
                                     onSubmit={handleCreatePost}
                                     className='space-y-4 mt-4'
                                 >
-                                    <Input
-                                        value={newPost.title}
-                                        onChange={(e) =>
-                                            setNewPost({
-                                                ...newPost,
-                                                title: e.target.value,
-                                            })
-                                        }
-                                        placeholder={text.titlePlaceholder}
-                                        disabled={isLoading}
-                                    />
-                                    <RichTextEditor
-                                        ref={editorRef}
-                                        initialContent={newPost.content}
-                                        onChange={(html) =>
-                                            setNewPost({
-                                                ...newPost,
-                                                content: html,
-                                            })
-                                        }
-                                    />
-                                    <Input
-                                        type='password'
-                                        value={newPost.password}
-                                        onChange={(e) =>
-                                            setNewPost({
-                                                ...newPost,
-                                                password: e.target.value,
-                                            })
-                                        }
-                                        placeholder={text.passwordPlaceholder}
-                                        required
-                                        disabled={isLoading}
-                                    />
+                                    <div className="space-y-2">
+                                        <label htmlFor="title" className="text-sm font-medium">{text.titlePlaceholder}</label>
+                                        <Input
+                                            id="title"
+                                            value={newPost.title}
+                                            onChange={(e) =>
+                                                setNewPost({
+                                                    ...newPost,
+                                                    title: e.target.value,
+                                                })
+                                            }
+                                            placeholder={text.titlePlaceholder}
+                                            disabled={isLoading}
+                                            className="text-base" // Increase font size for title
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label htmlFor="content" className="text-sm font-medium">{text.contentPlaceholder}</label>
+                                        <RichTextEditor
+                                            ref={editorRef}
+                                            initialContent={newPost.content}
+                                            onChange={(html) =>
+                                                setNewPost({
+                                                    ...newPost,
+                                                    content: html,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label htmlFor="password" className="text-sm font-medium">{text.passwordPlaceholder}</label>
+                                        <Input
+                                            id="password"
+                                            type='password'
+                                            value={newPost.password}
+                                            onChange={(e) =>
+                                                setNewPost({
+                                                    ...newPost,
+                                                    password: e.target.value,
+                                                })
+                                            }
+                                            placeholder={text.passwordPlaceholder}
+                                            required
+                                            disabled={isLoading}
+                                            className="text-sm" // Adjust font size for password
+                                        />
+                                    </div>
                                     <div className='flex justify-end space-x-2'>
                                         <Button
                                             type='button'
