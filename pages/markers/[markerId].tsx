@@ -2,7 +2,7 @@ import { GetStaticProps, GetStaticPaths } from "next";
 import { prisma } from "@/lib/prisma"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/router"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import PostModal from "@/components/PostModal"
 import Head from "next/head"
 
@@ -47,6 +47,14 @@ interface Props {
 export default function MarkerPage({ marker, posts }: Props) {
     const router = useRouter()
     const [isModalOpen, setIsModalOpen] = useState(true)
+
+    useEffect(() => {
+        // Set map state in localStorage to center the map on the marker
+        localStorage.setItem(
+            "mapState",
+            JSON.stringify({ lat: marker.latitude, lng: marker.longitude, zoom: 15 })
+        );
+    }, [marker]);
 
     // Close modal and redirect to home
     const handleClose = () => {
@@ -134,7 +142,7 @@ export default function MarkerPage({ marker, posts }: Props) {
                         ))}
                     </ul>
                 </div>
-                <MapComponent />
+                <MapComponent lat={marker.latitude} lng={marker.longitude} zoom={15} />
                 <PostModal
                     isOpen={isModalOpen}
                     onClose={handleClose}

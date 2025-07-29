@@ -48,7 +48,13 @@ const getAvailableTags = (isKorean: boolean): Tag[] => [
     { value: "other", label: isKorean ? "기타" : "Other" },
 ];
 
-export default function MapComponent() {
+interface MapComponentProps {
+    lat?: number;
+    lng?: number;
+    zoom?: number;
+}
+
+export default function MapComponent({ lat, lng, zoom }: MapComponentProps) {
     const [markers, setMarkers] = useState<MarkerData[]>([])
     const [filteredMarkers, setFilteredMarkers] = useState<MarkerData[]>([])
     const [selectedPosition, setSelectedPosition] = useState<{
@@ -71,6 +77,9 @@ export default function MapComponent() {
         lng: number
         zoom: number
     }>(() => {
+        if (lat && lng) {
+            return { lat, lng, zoom: zoom || 13 };
+        }
         if (typeof window === "undefined") {
             return { lat: 37.5238, lng: 126.9266, zoom: 13 }
         }

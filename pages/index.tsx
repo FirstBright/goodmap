@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar"
 import dynamic from "next/dynamic"
 import Head from "next/head"
 import { useState, useEffect } from "react"
+import { prisma } from "@/lib/prisma";
 
 const MapComponent = dynamic(() => import("@/components/MapComponent"), {
     ssr: false,
@@ -16,11 +17,31 @@ const AdFitBanner = dynamic(() => import("@/components/AdFitBanner"), {
 })
 const Intro = dynamic(() => import("@/components/Intro"), { ssr: true })
 
-export default function Home() {
+interface MarkerData {
+    id: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+}
+
+interface HomeProps {
+    marker?: MarkerData;
+}
+
+export default function Home({ marker }: HomeProps) {
     const [isReady, setIsReady] = useState(false)
     const [showIntro, setShowIntro] = useState(false)
 
     useEffect(() => {
+        if (marker) {
+            localStorage.setItem(
+                "mapState",
+                JSON.stringify({ lat: marker.latitude, lng: marker.longitude, zoom: 15 })
+            );
+            setIsReady(true);
+            return;
+        }
+
         let isValidMapState = false;
         try {
             const mapState = localStorage.getItem("mapState");
@@ -43,12 +64,13 @@ export default function Home() {
         } else {
             setShowIntro(true);
         }
-    }, [])
+    }, [marker])
 
     const handleContinentSelected = (lat: number, lng: number) => {
+        const mapState = { lat, lng, zoom: 7 };
         localStorage.setItem(
             "mapState",
-            JSON.stringify({ lat, lng, zoom: 7 })
+            JSON.stringify(mapState)
         )
         setShowIntro(false)
         setIsReady(true)
@@ -129,4 +151,32 @@ export default function Home() {
             </main>
         </>
     )
+}
+
+import { GetServerSidePropsContext } from 'next';
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+    const { markerId } = context.query;
+
+    if (markerId && typeof markerId === 'string') {
+        // If a markerId is present, fetch marker data and pass it as props
+        const marker = await prisma.marker.findUnique({
+            where: { id: markerId },
+        });
+
+        if (marker) {
+            return {
+                props: {
+                    marker: {
+                        id: marker.id,
+                        name: marker.name,
+                        latitude: marker.latitude,
+                        longitude: marker.longitude,
+                    },
+                },
+            };
+        }
+    }
+
+    return { props: {} };
 }
