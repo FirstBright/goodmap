@@ -72,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     } else if (req.method === "PATCH") {
         try {
-            const { title, content} = req.body;
+            const { title, content, password } = req.body;
             const post = await prisma.post.findUnique({
                 where: { id: String(id) },
                 include: { marker: { select: { id: true } } },
@@ -80,7 +80,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (!post) {
                 return res.status(404).json({ message: "포스트를 찾을 수 없습니다." });
-            }         
+            }
+
+            // Admin can update without password
+            if (!session || !session.user.isAdmin) {
+                if (!password) {
+                    return res.status(400).json({ message: "비밀번호가 필요합니다." });
+                }
+                const isValid = await bcrypt.compare(password, post.password);
+                if (!isValid) {
+                    return res.status(403).json({ message: "비밀번호가 틀렸습니다." });
+                }
+            }
 
             const updatedPost = await prisma.post.update({
                 where: { id: String(id) },
